@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="theme-color" content="#f2f2f7" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Shoplist" />
+<title>Shoplist</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface-2: #f7f7fa;
+    --text: #1c1c1e;
+    --text-2: #6b6b70;
+    --text-3: #a0a0a8;
+    --separator: #e8e8ee;
+    --accent: #34c759;
+    --accent-press: #2bb04c;
+    --accent-soft: #e7f8ec;
+    --danger: #ff3b30;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.05);
+    --shadow-md: 0 4px 14px rgba(0,0,0,.08);
+    --radius: 14px;
+    --tabbar-h: 56px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.4;
+    -webkit-font-smoothing: antialiased; overscroll-behavior-y: none;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+  input { font: inherit; color: inherit; }
+  .app { max-width: 640px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; position: relative; background: var(--bg); }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(242,242,247,.85);
+    backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px);
+    padding-top: var(--safe-top); border-bottom: 1px solid var(--separator);
+  }
+  .topbar-inner { padding: 10px 16px 12px; }
+  .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .brand { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+  .brand .dot { color: var(--accent); }
+
+  .stores { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .stores::-webkit-scrollbar { display: none; }
+  .pill {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm);
+    font-size: 15px; font-weight: 600; color: var(--text-2); white-space: nowrap;
+    transition: background .15s, color .15s, transform .08s;
+  }
+  .pill:active { transform: scale(.96); }
+  .pill.active { background: var(--accent); color: #fff; box-shadow: var(--shadow-md); }
+  .pill.add { color: var(--accent); border: 1.5px dashed var(--accent); background: transparent; box-shadow: none; }
+  .pill .x { font-size: 16px; line-height: 1; opacity: .5; margin-left: 2px; }
+  .pill.active .x { opacity: .8; color: #fff; }
+
+  .search-wrap { position: relative; margin-top: 12px; }
+  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+  .search { width: 100%; padding: 10px 34px 10px 38px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface); font-size: 16px; box-shadow: var(--shadow-sm); outline: none; }
+  .search:focus { border-color: var(--accent); }
+  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--separator); display: none; align-items: center; justify-content: center; color: var(--text-2); font-size: 14px; }
+  .search-clear.show { display: inline-flex; }
+
+
+  .cat { margin-bottom: 12px; }
+  /* Category headers are plain cards (rounded + shadowed). Item rows are NOT
+     rounded cards — they sit flush inside the category, separated by hairlines,
+     with a trailing "⋯" button that opens an Edit / Delete menu (no swipe). */
+  .row-card { background: var(--surface); box-shadow: var(--shadow-sm); }
+  .cat-body .item { border-top: 1px solid var(--separator); }
+  .cat-body .item:first-child { border-top: none; }
+  .cat-header { display: flex; align-items: center; padding: 0 14px; border-radius: var(--radius); }
+  .cat-head { display: flex; align-items: center; gap: 10px; padding: 14px 2px; text-align: left; background: transparent; flex: 1; min-width: 0; }
+  .cat-head .chev { color: var(--text-3); transition: transform .2s; flex: 0 0 auto; }
+
+  .content { flex: 1; padding: 16px; }
+  /* "⋯" action button at the right of a row. Tapping opens the row's menu. */
+  .menu-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: background .15s; }
+  .menu-btn:active { background: var(--surface-2); }
+  .cat-title { flex: 1; font-size: 17px; font-weight: 700; letter-spacing: -.2px; min-width: 0; }
+  .cat-count { font-size: 13px; font-weight: 600; color: var(--text-3); background: var(--surface-2); border-radius: 999px; padding: 2px 9px; flex: 0 0 auto; }
+  .cat-count.has { color: var(--accent); background: var(--accent-soft); }
+  /* The item body is a separate container below the header card. It is NOT
+     clipped by the card's overflow:hidden, so each item row can reveal its own
+     buttons. A small gap separates it from the header card. */
+  .cat-body { display: none; margin-top: 8px; }
+  .cat-body.open { display: block; }
+  .cat-head.open .chev { transform: rotate(90deg); }
+  .cat-foot { display: flex; }
+  .cat-add { flex: 1; padding: 12px 16px; font-size: 15px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .cat-add:active { background: var(--surface-2); }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; position: relative; }
+  .item .name { flex: 1; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .item-tag { font-size: 12px; font-weight: 600; color: var(--text-3); margin-left: 8px; }
+  .item.on .name { color: var(--text-3); text-decoration: line-through; }
+  .check { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--separator); display: inline-flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; }
+  .check svg { opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
+  .item.on .check { background: var(--accent); border-color: var(--accent); }
+  .item.on .check svg { opacity: 1; transform: scale(1); }
+
+  .empty { text-align: center; color: var(--text-3); padding: 48px 20px; font-size: 15px; }
+  .empty .big { font-size: 40px; margin-bottom: 12px; }
+
+  .list-group { margin-bottom: 20px; }
+  .list-group-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 10px; }
+  .list-group-title { font-size: 15px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .6px; }
+  .list-send { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent); }
+  .list-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .list-card .item { border-top: 1px solid var(--separator); }
+  .list-card .item:first-child { border-top: none; }
+  .list-card .item .name { text-decoration: none; color: var(--text); }
+
+  .send-all { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 16px; padding: 14px; border-radius: 14px; background: var(--accent); color: #fff; font-size: 16px; font-weight: 700; box-shadow: var(--shadow-md); transition: background .15s, transform .08s; }
+  .send-all:active { background: var(--accent-press); transform: scale(.98); }
+  .send-all:disabled { background: var(--separator); color: var(--text-3); box-shadow: none; }
+
+
+
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--tabbar-h) + var(--safe-bottom)); padding-bottom: var(--safe-bottom); background: rgba(255,255,255,.88); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); border-top: 1px solid var(--separator); display: flex; z-index: 40; max-width: 640px; margin: 0 auto; }
+  .tab { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text-3); font-size: 11px; font-weight: 600; }
+  .tab svg { width: 24px; height: 24px; }
+  .tab.active { color: var(--accent); }
+  .tab .badge { position: absolute; margin-top: -22px; margin-left: 20px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px; display: none; align-items: center; justify-content: center; }
+  .tab .badge.show { display: flex; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 60; display: none; align-items: flex-end; justify-content: center; animation: fade .18s ease; }
+  .modal-backdrop.show { display: flex; }
+  .sheet { width: 100%; max-width: 640px; background: var(--surface); border-radius: 20px 20px 0 0; padding: 8px 20px calc(20px + var(--safe-bottom)); animation: slideUp .22s cubic-bezier(.2,.8,.2,1); }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--separator); margin: 6px auto 14px; }
+  .sheet h3 { margin: 0 0 14px; font-size: 18px; font-weight: 700; text-align: center; }
+  .sheet-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; background: var(--surface-2); }
+  .btn:active { opacity: .8; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.danger { background: var(--surface-2); color: var(--danger); }
+  .sheet .field { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface-2); font-size: 16px; outline: none; }
+  .sheet .field:focus { border-color: var(--accent); }
+
+  .toast { position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + 20px + var(--safe-bottom)); transform: translateX(-50%) translateY(20px); background: rgba(28,28,30,.92); color: #fff; padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; max-width: 80%; text-align: center; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .add-category-row { width: 100%; border: 1.5px dashed var(--separator); border-radius: var(--radius); box-shadow: none; background: transparent; padding: 14px 16px; color: var(--accent); }
+
+  @media (min-width: 700px) { .app { box-shadow: 0 0 40px rgba(0,0,0,.1); } body { background: #e9e9ee; } }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-row">
+        <div class="brand">Shoplist<span class="dot">.</span></div>
+      </div>
+      <div class="stores" id="stores"></div>
+      <div class="search-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="search" id="search" type="search" placeholder="Search items" autocomplete="off" />
+        <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="content" id="content"></main>
+
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1Z"/><path d="m9 14 2 2 4-4"/></svg>
+      <span>My List</span>
+      <span class="badge" id="listBadge">0</span>
+    </button>
+    <button class="tab" data-tab="stores">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span>Stores</span>
+    </button>
+  </nav>
+</div>
+
+<div class="modal-backdrop" id="backdrop"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+</body>
+<script>
+(function () {
+  "use strict";
+  const KEY = "shoplist.v1";
+
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8));
+
+  function seedData() {
+    const c1 = uid(), c2 = uid(), c3 = uid();
+    return {
+      stores: [
+        { id: uid(), name: "Grocery", categories: [
+          { id: c1, name: "Produce", items: [
+            { id: uid(), name: "Bananas", done: false },
+            { id: uid(), name: "Apples", done: false },
+            { id: uid(), name: "Spinach", done: true }
+          ]},
+          { id: c2, name: "Dairy", items: [
+            { id: uid(), name: "Milk", done: false },
+            { id: uid(), name: "Eggs", done: false }
+          ]},
+          { id: c3, name: "Bakery", items: [
+            { id: uid(), name: "Sourdough", done: false }
+          ]}
+        ]}
+      ],
+      activeStore: 0,
+      openCats: {},
+      tab: "list"
+    };
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d && Array.isArray(d.stores)) {
+          d.openCats = d.openCats || {};
+          if (typeof d.activeStore !== "number" || d.activeStore < 0 || d.activeStore >= d.stores.length) d.activeStore = 0;
+          d.tab = d.tab || "list";
+          return d;
+        }
+      }
+    } catch (e) { console.warn("load failed", e); }
+    return seedData();
+  }
+
+  let state = load();
+  let query = "";
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn("save failed", e); }
+  }
+
+  // ---- DOM refs ----
+  const $ = (s, r = document) => r.querySelector(s);
+  const storesEl = $("#stores");
+  const contentEl = $("#content");
+  const searchEl = $("#search");
+  const searchClear = $("#searchClear");
+  const backdrop = $("#backdrop");
+  const sheet = $("#sheet");
+  const toastEl = $("#toast");
+  const listBadge = $("#listBadge");
+  const tabs = Array.from(document.querySelectorAll(".tab"));
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const CHECK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
+  const CHEV_SVG = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+  const PLUS_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+  const DOTS_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>';
+  // ---- helpers ----
+  let toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function matchesQuery(item) {
+    if (!query) return true;
+    return item.name.toLowerCase().includes(query);
+  }
+
+  // ---- render: stores pills ----
+  function renderStores() {
+    let html = "";
+    state.stores.forEach((s, i) => {
+      const active = i === state.activeStore ? " active" : "";
+      html += `<button class="pill${active}" data-store="${i}">${esc(s.name)}</button>`;
+    });
+    html += `<button class="pill add" data-addstore="1">${PLUS_SVG}Add store</button>`;
+    storesEl.innerHTML = html;
+  }
+
+  // ---- render: a single item row ----
+  function itemRow(item, ctx) {
+    // The store item's checkbox is the single source of truth:
+    //  - Stores tab: checking "selects" it (adds it to My List).
+    //  - My List tab: checking "purchases" it (moves it to Purchased).
+    const on = item.done ? " on" : "";
+    const tag = item.cat ? `<span class="item-tag">${esc(item.cat)}</span>` : "";
+    // A trailing "⋯" button opens the row's Edit / Delete menu. It's shown on
+    // every item row. ctx is the category object (Stores tab) or the string
+    // "list" (My List tab) — both get a menu.
+    const menu = `<button class="menu-btn" data-itemmenu="${item.id}" aria-label="Item menu">${DOTS_SVG}</button>`;
+    return `<div class="item row-card${on}" data-item="${item.id}">
+      <button class="check" data-toggle="${item.id}" aria-label="Toggle">${CHECK_SVG}</button>
+      <span class="name">${esc(item.name)}${tag}</span>
+      ${menu}
+    </div>`;
+  }
+
+  // ---- render: active store (Stores tab) ----
+  function renderStore() {
+    const store = state.stores[state.activeStore];
+    if (!store) {
+      contentEl.innerHTML = `<div class="empty"><div class="big">🏪</div>No store selected.<br>Add a store to start.</div>`;
+      return;
+    }
+    let html = "";
+    let anyVisible = false;
+    store.categories.forEach((cat) => {
+      const items = cat.items.filter(matchesQuery);
+      if (query && items.length === 0) return;
+      anyVisible = true;
+      const open = state.openCats[cat.id] || !query;
+      const total = cat.items.length;
+      const left = cat.items.filter((i) => !i.done).length;
+      const countCls = left > 0 ? " has" : "";
+      let body = items.map((it) => itemRow(it, cat)).join("");
+      if (!items.length) body = `<div class="empty" style="padding:20px">Nothing here yet.</div>`;
+      // The header is a plain card: an expand button (chevron + title + count)
+      // plus a trailing "⋯" button that opens the category's Edit / Delete menu.
+      // The menu button is a SIBLING of the expand button, not nested inside it.
+      const catHead = `<button class="cat-head${open ? " open" : ""}" data-togglecat="${cat.id}">
+        ${CHEV_SVG}
+        <span class="cat-title">${esc(cat.name)}</span>
+        <span class="cat-count${countCls}">${left ? left + " left" : "done"}</span>
+      </button>
+      <button class="menu-btn" data-catmenu="${cat.id}" aria-label="Category menu">${DOTS_SVG}</button>`;
+      const catBody = `<div class="cat-body${open ? " open" : ""}">
+        ${body}
+        <div class="cat-foot"><button class="cat-add" data-additem="${cat.id}">${PLUS_SVG}Add item</button></div>
+      </div>`;
+      html += `<section class="cat" data-cat="${cat.id}">
+        <div class="cat-header row-card">${catHead}</div>
+        ${catBody}
+      </section>`;
+    });
+    if (!anyVisible) {
+      html = `<div class="empty"><div class="big">🔍</div>${query ? "No items match your search." : "No categories yet. Add one below."}</div>`;
+    }
+    // Always show the add-category row so it works even for empty stores.
+    html += `<button class="cat add-category-row" data-addcat="1">${PLUS_SVG}Add category</button>`;
+    contentEl.innerHTML = html;
+  }
+
+  // ---- render: my list (List tab) ----
+  function renderList() {
+    // My List shows the items selected (checked) in the active store,
+    // split into To buy (selected) and Purchased (purchased).
+    const items = storeItems().filter((i) => i.done).filter(matchesQuery);
+    const toBuy = items.filter((i) => !i.purchased);
+    const purchased = items.filter((i) => i.purchased);
+    if (items.length === 0) {
+      contentEl.innerHTML = `<div class="empty"><div class="big">🧾</div>Your list is empty.<br>Select items in the ${esc(state.stores[state.activeStore]?.name || "active")} store to add them here.</div>`;
+      return;
+    }
+    let html = `<button class="send-all" data-sendall="1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
+      Text list via SMS
+    </button>`;
+    if (toBuy.length) {
+      html += `<div class="list-group">
+        <div class="list-group-head"><span class="list-group-title">To buy</span><span class="list-send">${toBuy.length} item${toBuy.length > 1 ? "s" : ""}</span></div>
+        <div class="list-card">${toBuy.map((i) => itemRow(i, "list")).join("") || ""}</div>
+      </div>`;
+    }
+    if (purchased.length) {
+      html += `<div class="list-group">
+        <div class="list-group-head"><span class="list-group-title">Purchased</span><span class="list-send">${purchased.length}</span><button class="list-send" data-clear="1" style="margin-left:12px">Clear</button></div>
+        <div class="list-card">${purchased.map((i) => itemRow(i, "list")).join("")}</div>
+      </div>`;
+    }
+    if (!items.length && query) html += `<div class="empty"><div class="big">🔍</div>No items match your search.</div>`;
+    contentEl.innerHTML = html;
+  }
+
+  function updateBadge() {
+    const n = storeItems().filter((i) => i.done && !i.purchased).length;
+    listBadge.textContent = n;
+    listBadge.classList.toggle("show", n > 0);
+  }
+
+  function render() {
+    renderStores();
+    if (state.tab === "stores") renderStore();
+    else renderList();
+    updateBadge();
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === state.tab));
+    save();
+  }
+
+  // ---- mutations ----
+  function findStoreItem(id) {
+    for (const store of state.stores) {
+      for (const cat of store.categories) {
+        const idx = cat.items.findIndex((i) => i.id === id);
+        if (idx >= 0) return { store, cat, item: cat.items[idx], idx };
+      }
+    }
+    return null;
+  }
+
+  function storeItems() {
+    const out = [];
+    const store = state.stores[state.activeStore];
+    if (!store) return out;
+    store.categories.forEach((cat) => {
+      cat.items.forEach((it) => {
+        out.push({ ...it, store: store.name, cat: cat.name });
+      });
+    });
+    return out;
+  }
+
+  function addItemToStore(catId, name) {
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    const cat = store.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    cat.items.push({ id: uid(), name, done: false });
+    state.openCats[catId] = true;
+    render();
+    toast("Added " + name);
+  }
+
+  function toggleItem(id, ctx) {
+    const s = findStoreItem(id);
+    if (!s) return;
+    if (ctx === "list") {
+      // My List: checking marks the item as purchased (moves To buy → Purchased).
+      s.item.purchased = !s.item.purchased;
+    } else {
+      // Stores: checking selects the item (adds it to My List).
+      s.item.done = !s.item.done;
+    }
+    render();
+  }
+
+  function deleteItem(id, ctx) {
+    const s = findStoreItem(id);
+    if (!s) return;
+    if (ctx === "list") {
+      // My List: un-check the store item so it disappears from the list.
+      s.item.done = false;
+      s.item.purchased = false;
+      render();
+      toast("Removed from list");
+    } else {
+      s.cat.items.splice(s.idx, 1);
+      render();
+      toast("Item removed");
+    }
+  }
+
+  function clearPurchased() {
+    // Un-check the store items that are in the active store's list, so they
+    // drop out of My List and back to an unselected state in the store.
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    let removed = 0;
+    store.categories.forEach((cat) => {
+      cat.items.forEach((it) => {
+        if (it.done) { it.done = false; it.purchased = false; removed++; }
+      });
+    });
+    render();
+    toast(removed ? `Cleared ${removed} item${removed > 1 ? "s" : ""} from list` : "Nothing to clear");
+  }
+
+  function addCategory(name) {
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    store.categories.push({ id: uid(), name, items: [] });
+    render();
+    toast("Category added");
+  }
+
+  function renameItem(id, name) {
+    const s = findStoreItem(id);
+    if (!s) return;
+    s.item.name = name;
+    render();
+    toast("Item updated");
+  }
+
+  function renameCategory(catId, name) {
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    const cat = store.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    cat.name = name;
+    render();
+    toast("Category updated");
+  }
+
+  function deleteCategory(catId) {
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    const idx = store.categories.findIndex((c) => c.id === catId);
+    if (idx < 0) return;
+    const cat = store.categories[idx];
+    const n = cat.items.length;
+    if (n > 0 && !confirm(`Delete "${cat.name}" and its ${n} item${n > 1 ? "s" : ""}?`)) return;
+    store.categories.splice(idx, 1);
+    render();
+    toast("Category removed");
+  }
+
+  function addStore(name) {
+    state.stores.push({ id: uid(), name, categories: [] });
+    state.activeStore = state.stores.length - 1;
+    render();
+    toast("Store added");
+  }
+
+  function renameStore(i, name) {
+    if (!state.stores[i]) return;
+    state.stores[i].name = name;
+    render();
+  }
+
+  function deleteStore(i) {
+    state.stores.splice(i, 1);
+    if (state.activeStore >= state.stores.length) state.activeStore = Math.max(0, state.stores.length - 1);
+    render();
+    toast("Store removed");
+  }
+
+  // ---- modals ----
+  let sheetOpen = false;
+
+  // Anchor the sheet to the *visual* viewport so it sits just above the on-screen
+  // keyboard. With `interactive-widget=resizes-content` the layout viewport shrinks
+  // when the keyboard opens, but a `position: fixed; bottom: 0` sheet stays pinned
+  // to the (now smaller) layout bottom — hidden behind the keyboard until the user
+  // scrolls. Tracking the visual viewport keeps the field visible.
+  function positionSheet() {
+    const vv = window.visualViewport;
+    if (!sheetOpen || !vv) return;
+    backdrop.style.left = vv.offsetLeft + "px";
+    backdrop.style.top = vv.offsetTop + "px";
+    backdrop.style.width = vv.width + "px";
+    backdrop.style.height = vv.height + "px";
+  }
+  function clearSheetPosition() {
+    backdrop.style.left = backdrop.style.top = backdrop.style.width = backdrop.style.height = "";
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", positionSheet);
+    window.visualViewport.addEventListener("scroll", positionSheet);
+  }
+  // Re-focus the sheet's first field. Used both on open and as a safety net
+  // in case the mobile browser cancels a programmatic focus (common when the
+  // keyboard opens at the same time and the browser reclaims focus).
+  function focusSheetField() {
+    const field = sheet.querySelector("input.field, textarea.field");
+    if (!field) return;
+    // preventScroll:false so the browser scrolls the freshly-focused field into
+    // view (the sheet slides up). Guard against an already-focused field to
+    // avoid a scroll jump / focus loop with the safety net below.
+    if (document.activeElement === field) return;
+    field.focus({ preventScroll: false });
+    const len = field.value.length;
+    try { field.setSelectionRange(len, len); } catch (e) {}
+  }
+  function openSheet(title, bodyHtml, actionsHtml) {
+    if (sheetOpen) closeSheet();
+    sheetOpen = true;
+    sheet.innerHTML = `<div class="grab"></div><h3>${esc(title)}</h3>${bodyHtml}${actionsHtml || ""}`;
+    backdrop.classList.add("show");
+    positionSheet();
+    // Focus the first field synchronously, *during* the tap that opened the
+    // sheet. This keeps the programmatic focus within the user-gesture window,
+    // so the keyboard opens and the sheet rises. (A setTimeout delay lets the
+    // gesture expire and the browser cancels the focus — the sheet then never
+    // appears. The focusin safety net below re-grabs focus if it is lost.)
+    focusSheetField();
+  }
+  function closeSheet() {
+    sheetOpen = false;
+    backdrop.classList.remove("show");
+    clearSheetPosition();
+    // Blur any focused field so the keyboard releases.
+    const f = sheet.querySelector("input.field, textarea.field");
+    if (f) { try { f.blur(); } catch (e) {} }
+  }
+  // Safety net: if focus is lost while the sheet is open (e.g. the keyboard
+  // opening stole it, or the browser reclaims it after the open tap), move
+  // focus back to the field. We focus with preventScroll:true here so the
+  // visible sheet does not jump — it is already on screen.
+  document.addEventListener("focusin", (e) => {
+    if (!sheetOpen || !sheet.contains(e.target)) return;
+    const field = sheet.querySelector("input.field:not([readonly]), textarea.field:not([readonly])");
+    if (!field || field === e.target) return;
+    if (document.activeElement !== field) {
+      try { field.focus({ preventScroll: true }); } catch (err) {}
+      const len = field.value.length;
+      try { field.setSelectionRange(len, len); } catch (err) {}
+    }
+  });
+
+  function openAddItem(catId) {
+    openSheet("Add item",
+      `<input class="field" id="f" placeholder="Item name" maxlength="60" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Add</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) addItemToStore(catId, v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openEditItem(id) {
+    const s = findStoreItem(id);
+    if (!s) return;
+    openSheet("Edit item",
+      `<input class="field" id="f" value="${esc(s.item.name)}" placeholder="Item name" maxlength="60" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Save</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) renameItem(id, v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openItemMenu(id) {
+    const s = findStoreItem(id);
+    if (!s) return;
+    openSheet("Item options",
+      `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px"><b>${esc(s.item.name)}</b></p>`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector('[data-act="edit"]').onclick = () => { closeSheet(); openEditItem(id); };
+    sheet.querySelector('[data-act="del"]').onclick = () => {
+      if (confirm(`Delete "${s.item.name}"?`)) { deleteItem(id, "stores"); }
+      closeSheet();
+    };
+  }
+
+  function openCategoryMenu(catId) {
+    const store = state.stores[state.activeStore];
+    const cat = store && store.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    openSheet("Category options",
+      `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px"><b>${esc(cat.name)}</b></p>`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector('[data-act="edit"]').onclick = () => { closeSheet(); openEditCategory(catId); };
+    sheet.querySelector('[data-act="del"]').onclick = () => {
+      if (confirm(`Delete "${cat.name}" and its ${cat.items.length} item(s)?`)) { deleteCategory(catId); }
+      closeSheet();
+    };
+  }
+
+  function openEditCategory(catId) {
+    const store = state.stores[state.activeStore];
+    const cat = store && store.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    openSheet("Edit category",
+      `<input class="field" id="f" value="${esc(cat.name)}" placeholder="e.g. Frozen" maxlength="30" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Save</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) renameCategory(catId, v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openAddCategory() {
+    openSheet("New category",
+      `<input class="field" id="f" placeholder="e.g. Frozen" maxlength="30" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Create</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) addCategory(v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openAddStore() {
+    openSheet("New store",
+      `<input class="field" id="f" placeholder="e.g. Pharmacy" maxlength="30" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Create</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) addStore(v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openRenameStore(i) {
+    openSheet("Rename store",
+      `<input class="field" id="f" value="${esc(state.stores[i].name)}" maxlength="30" />`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Save</button></div>`);
+    sheet.querySelector('[data-act="save"]').onclick = () => {
+      const v = sheet.querySelector("#f").value.trim();
+      if (v) renameStore(i, v);
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };
+  }
+
+  function openDeleteStore(i) {
+    const name = state.stores[i].name;
+    openSheet("Delete store",
+      `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px">Delete <b>${esc(name)}</b> and all its items?</p>`,
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn danger" data-act="del">Delete</button></div>`);
+    sheet.querySelector('[data-act="del"]').onclick = () => { deleteStore(i); closeSheet(); };
+    sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+  }
+
+  function openManageStores() {
+    let rows = state.stores.map((s, i) =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--separator)">
+        <span style="flex:1;font-weight:600">${esc(s.name)}</span>
+        <button class="list-send" data-mren="${i}">Rename</button>
+        <button class="list-send" style="color:var(--danger)" data-mdel="${i}">Delete</button>
+      </div>`).join("");
+    openSheet("Manage stores", rows,
+      `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>`);
+    sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(); openRenameStore(+b.dataset.mren); });
+    sheet.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
+    sheet.querySelector('[data-act="done"]').onclick = closeSheet;
+  }
+
+  // ---- SMS ----
+  function buildSMS() {
+    // Send the items the user still needs to buy (selected, not yet purchased).
+    const pending = storeItems().filter((i) => i.done && !i.purchased);
+    if (!pending.length) { toast("Nothing to send yet"); return; }
+    const lines = pending.map((i) => `- ${i.name}${i.cat ? " (" + i.cat + ")" : ""}`).join("\n");
+    const storeName = state.stores[state.activeStore]?.name || "";
+    const msg = `Shopping list — ${storeName}:\n` + lines;
+    openSheet("Text list via SMS",
+      `<p style="text-align:center;color:var(--text-2);font-size:13px;margin-bottom:10px">${pending.length} item${pending.length > 1 ? "s" : ""} · tap to send via your carrier</p>
+       <textarea class="field" id="f" rows="6" readonly>${esc(msg)}</textarea>`,
+      `<div class="sheet-actions"><button class="btn" data-act="copy">Copy</button><button class="btn primary" data-act="send">Send</button></div>`);
+    const enc = encodeURIComponent(msg);
+    sheet.querySelector('[data-act="send"]').onclick = () => {
+      window.location.href = "sms:?&body=" + enc;
+      closeSheet();
+    };
+    sheet.querySelector('[data-act="copy"]').onclick = () => {
+      const ta = sheet.querySelector("#f");
+      ta.select();
+      try { document.execCommand("copy"); toast("Copied list"); } catch (e) { toast("Copy failed"); }
+    };
+    backdrop.classList.add("show");
+  }
+
+  // ---- event wiring ----
+  // content clicks (delegated)
+  contentEl.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-toggle],[data-del],[data-itemmenu],[data-catmenu],[data-edititem],[data-togglecat],[data-additem],[data-addcat],[data-editcat],[data-delcat],[data-sendall],[data-clear]");
+    if (!t) return;
+    if (t.dataset.toggle !== undefined) toggleItem(t.dataset.toggle, state.tab);
+    else if (t.dataset.del !== undefined) deleteItem(t.dataset.del, state.tab);
+    else if (t.dataset.itemmenu !== undefined) openItemMenu(t.dataset.itemmenu);
+    else if (t.dataset.catmenu !== undefined) openCategoryMenu(t.dataset.catmenu);
+    else if (t.dataset.edititem !== undefined) openEditItem(t.dataset.edititem);
+    else if (t.dataset.clear !== undefined) clearPurchased();
+    else if (t.dataset.togglecat !== undefined) { state.openCats[t.dataset.togglecat] = !(state.openCats[t.dataset.togglecat] || !query); render(); }
+    else if (t.dataset.additem !== undefined) openAddItem(t.dataset.additem);
+    else if (t.dataset.addcat !== undefined) openAddCategory();
+    else if (t.dataset.editcat !== undefined) openEditCategory(t.dataset.editcat);
+    else if (t.dataset.delcat !== undefined) deleteCategory(t.dataset.delcat);
+    else if (t.dataset.sendall !== undefined) buildSMS();
+  });
+
+  // stores row clicks (delegated)
+  storesEl.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-store],[data-addstore]");
+    if (!t) return;
+    if (t.dataset.store !== undefined) { state.activeStore = +t.dataset.store; render(); }
+    else if (t.dataset.addstore !== undefined) openAddStore();
+  });
+
+  // search
+  searchEl.addEventListener("input", () => { query = searchEl.value.trim().toLowerCase(); render(); });
+  searchClear.addEventListener("click", () => { searchEl.value = ""; query = ""; render(); searchEl.focus(); });
+
+  // backdrop closes sheet
+  backdrop.addEventListener("click", closeSheet);
+  // escape closes
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+
+  // tabs
+  tabs.forEach((t) => t.addEventListener("click", () => { state.tab = t.dataset.tab; render(); }));
+
+  // ---- init ----
+  render();
+
+  // service worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
+
