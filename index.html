@@ -349,7 +349,10 @@
       const items = cat.items.filter(matchesQuery);
       if (query && items.length === 0) return;
       anyVisible = true;
-      const open = state.openCats[cat.id] || !query;
+      // Normal view: default to expanded, but honor an explicit collapse the
+      // user made (openCats[cat.id] === false). Under search: force expanded so
+      // the matched item is always visible (the user can still collapse).
+      const open = query ? true : (state.openCats[cat.id] !== false);
       let body = items.map((it) => itemRow(it, cat)).join("");
       if (!items.length) body = `<div class="empty" style="padding:20px">Nothing here yet.</div>`;
       // The header is a plain card: an expand button (chevron + title + count)
@@ -837,7 +840,7 @@
     else if (t.dataset.catmenu !== undefined) { openCategoryMenu(t.dataset.catmenu); }
     else if (t.dataset.edititem !== undefined) { openEditItem(t.dataset.edititem); }
     else if (t.dataset.clear !== undefined) clearPurchased();
-    else if (t.dataset.togglecat !== undefined) { state.openCats[t.dataset.togglecat] = !(state.openCats[t.dataset.togglecat] || !query); render(); }
+    else if (t.dataset.togglecat !== undefined) { state.openCats[t.dataset.togglecat] = !(state.openCats[t.dataset.togglecat] !== false); render(); }
     else if (t.dataset.additem !== undefined) openAddItem(t.dataset.additem);
     else if (t.dataset.addcat !== undefined) openAddCategory();
     else if (t.dataset.editcat !== undefined) openEditCategory(t.dataset.editcat);
