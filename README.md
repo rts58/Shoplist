@@ -4,6 +4,8 @@ A small, **local-first** shopping list app that lives in your phone's browser.
 
 Shoplist is a [Progressive Web App (PWA)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) — a single `index.html` file with no backend, no accounts, and no build step. It looks and feels like a native app, works offline, and keeps all of your data on your own device in the browser's `localStorage`.
 
+This app was built as an initial exercise in using a local LLM to create a usable phone app. All of the coding was done with LM Studio using Cline as an agent with the model Qwen3.8-27b.
+
 ```
 Shopping list — Whole Foods:
 - Spinach (Produce)
@@ -32,7 +34,7 @@ Shopping list — Whole Foods:
 
 ### Use the hosted app
 
-1. Open the app URL in your phone's browser (e.g. `https://<username>.github.io/Shoplist/`).
+1. Open the app URL in your phone's browser (e.g. `https://rts58.github.io/Shoplist/`).
 2. Tap your browser's **Share / Menu** button, then choose **Add to Home Screen**.
 3. Launch it from the home-screen icon — it runs full-screen and works offline.
 
@@ -99,7 +101,7 @@ Because the app is a static site, the easiest way to share it is **GitHub Pages*
 1. Push the repo to GitHub (see [Development](#-development)).
 2. In the repo, go to **Settings → Pages**.
 3. Set **Source** to *Deploy from a branch* → **`main`** branch, root **`/`** → **Save**.
-4. Your app is live at `https://<username>.github.io/Shoplist/`.
+4. Your app is live at `https://rts58.github.io/Shoplist/`.
 5. Send that URL to friends; they *Add to Home Screen* and they're set.
 
 > The repository name must match the Pages URL (here: `Shoplist`). Pages serves the branch root, so no extra path configuration is needed.
