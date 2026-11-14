@@ -67,12 +67,8 @@
   .pill .x { font-size: 16px; line-height: 1; opacity: .5; margin-left: 2px; }
   .pill.active .x { opacity: .8; color: #fff; }
 
-  .search-wrap { position: relative; margin-top: 12px; }
-  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
-  .search { width: 100%; padding: 10px 34px 10px 38px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface); font-size: 16px; box-shadow: var(--shadow-sm); outline: none; }
-  .search:focus { border-color: var(--accent); }
-  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--separator); display: none; align-items: center; justify-content: center; color: var(--text-2); font-size: 14px; }
-  .search-clear.show { display: inline-flex; }
+  .icon-btn { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-2); background: transparent; transition: background .15s; }
+  .icon-btn:active { background: var(--surface-2); }
 
 
   .cat { margin-bottom: 12px; }
@@ -91,8 +87,6 @@
   .menu-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: background .15s; }
   .menu-btn:active { background: var(--surface-2); }
   .cat-title { flex: 1; font-size: 17px; font-weight: 700; letter-spacing: -.2px; min-width: 0; }
-  .cat-count { font-size: 13px; font-weight: 600; color: var(--text-3); background: var(--surface-2); border-radius: 999px; padding: 2px 9px; flex: 0 0 auto; }
-  .cat-count.has { color: var(--accent); background: var(--accent-soft); }
   /* The item body is a separate container below the header card. It is NOT
      clipped by the card's overflow:hidden, so each item row can reveal its own
      buttons. A small gap separates it from the header card. */
@@ -166,13 +160,11 @@
     <div class="topbar-inner">
       <div class="brand-row">
         <div class="brand">Shoplist<span class="dot">.</span></div>
+        <button class="icon-btn" id="manageBtn" aria-label="Manage stores">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </button>
       </div>
       <div class="stores" id="stores"></div>
-      <div class="search-wrap">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input class="search" id="search" type="search" placeholder="Search items" autocomplete="off" />
-        <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
-      </div>
     </div>
   </header>
 
@@ -254,8 +246,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const storesEl = $("#stores");
   const contentEl = $("#content");
-  const searchEl = $("#search");
-  const searchClear = $("#searchClear");
+  const manageBtn = $("#manageBtn");
   const backdrop = $("#backdrop");
   const sheet = $("#sheet");
   const toastEl = $("#toast");
@@ -325,9 +316,6 @@
       if (query && items.length === 0) return;
       anyVisible = true;
       const open = state.openCats[cat.id] || !query;
-      const total = cat.items.length;
-      const left = cat.items.filter((i) => !i.done).length;
-      const countCls = left > 0 ? " has" : "";
       let body = items.map((it) => itemRow(it, cat)).join("");
       if (!items.length) body = `<div class="empty" style="padding:20px">Nothing here yet.</div>`;
       // The header is a plain card: an expand button (chevron + title + count)
@@ -336,7 +324,6 @@
       const catHead = `<button class="cat-head${open ? " open" : ""}" data-togglecat="${cat.id}">
         ${CHEV_SVG}
         <span class="cat-title">${esc(cat.name)}</span>
-        <span class="cat-count${countCls}">${left ? left + " left" : "done"}</span>
       </button>
       <button class="menu-btn" data-catmenu="${cat.id}" aria-label="Category menu">${DOTS_SVG}</button>`;
       const catBody = `<div class="cat-body${open ? " open" : ""}">
@@ -533,6 +520,7 @@
   }
 
   function deleteStore(i) {
+    if (state.stores.length <= 1) { toast("You need at least one store"); return; }
     state.stores.splice(i, 1);
     if (state.activeStore >= state.stores.length) state.activeStore = Math.max(0, state.stores.length - 1);
     render();
@@ -824,15 +812,15 @@
 
   // stores row clicks (delegated)
   storesEl.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-store],[data-addstore]");
+    const t = e.target.closest("[data-store],[data-addstore],[data-storemenu]");
     if (!t) return;
-    if (t.dataset.store !== undefined) { state.activeStore = +t.dataset.store; render(); }
+    if (t.dataset.storemenu !== undefined) { openManageStores(); }
+    else if (t.dataset.store !== undefined) { state.activeStore = +t.dataset.store; render(); }
     else if (t.dataset.addstore !== undefined) openAddStore();
   });
 
-  // search
-  searchEl.addEventListener("input", () => { query = searchEl.value.trim().toLowerCase(); render(); });
-  searchClear.addEventListener("click", () => { searchEl.value = ""; query = ""; render(); searchEl.focus(); });
+  // manage stores
+  manageBtn.addEventListener("click", openManageStores);
 
   // backdrop closes sheet — but only when the tap is *on the backdrop itself*.
   // Clicks on the sheet (or its buttons) bubble up to the backdrop; without this
