@@ -1,6 +1,7 @@
 # macOS
 .DS_Store
-
+.clinerules
+.clinerules.txt
 # Editor / OS noise
 *.swp
 *~
