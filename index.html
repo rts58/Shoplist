@@ -69,6 +69,14 @@
 
   .icon-btn { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-2); background: transparent; transition: background .15s; }
   .icon-btn:active { background: var(--surface-2); }
+  .brand-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+  .search-wrap { position: relative; margin-top: 12px; }
+  .search-wrap.hidden { display: none; }
+  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+  .search { width: 100%; padding: 10px 34px 10px 38px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface); font-size: 16px; box-shadow: var(--shadow-sm); outline: none; }
+  .search:focus { border-color: var(--accent); }
+  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--separator); display: none; align-items: center; justify-content: center; color: var(--text-2); font-size: 14px; }
+  .search-clear.show { display: inline-flex; }
 
 
   .cat { margin-bottom: 12px; }
@@ -160,9 +168,19 @@
     <div class="topbar-inner">
       <div class="brand-row">
         <div class="brand">Shoplist<span class="dot">.</span></div>
-        <button class="icon-btn" id="manageBtn" aria-label="Manage stores">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-        </button>
+        <div class="brand-actions">
+          <button class="icon-btn" id="manageBtn" aria-label="Manage stores">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </button>
+          <button class="icon-btn" id="searchBtn" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+        </div>
+        <div class="search-wrap" id="searchWrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input class="search" id="search" type="search" placeholder="Search items" autocomplete="off" enterkeyhint="search" />
+          <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
+        </div>
       </div>
       <div class="stores" id="stores"></div>
     </div>
@@ -247,6 +265,10 @@
   const storesEl = $("#stores");
   const contentEl = $("#content");
   const manageBtn = $("#manageBtn");
+  const searchBtn = $("#searchBtn");
+  const searchWrap = $("#searchWrap");
+  const searchInput = $("#search");
+  const searchClear = $("#searchClear");
   const backdrop = $("#backdrop");
   const sheet = $("#sheet");
   const toastEl = $("#toast");
@@ -271,6 +293,18 @@
   function matchesQuery(item) {
     if (!query) return true;
     return item.name.toLowerCase().includes(query);
+  }
+
+  // The search box only exists on the Stores tab. On the My List tab we hide it
+  // and clear any in-flight query so the list is never filtered.
+  function updateSearchVisibility() {
+    const show = state.tab === "stores";
+    searchWrap.classList.toggle("hidden", !show);
+    if (!show) {
+      query = "";
+      searchInput.value = "";
+      searchClear.classList.remove("show");
+    }
   }
 
   // ---- render: stores pills ----
@@ -381,6 +415,7 @@
   }
 
   function render() {
+    updateSearchVisibility();
     renderStores();
     if (state.tab === "stores") renderStore();
     else renderList();
@@ -821,6 +856,23 @@
 
   // manage stores
   manageBtn.addEventListener("click", openManageStores);
+
+  // search (Stores tab only)
+  searchBtn.addEventListener("click", () => {
+    if (state.tab !== "stores") { state.tab = "stores"; render(); }
+    searchInput.focus();
+  });
+  searchInput.addEventListener("input", () => {
+    query = searchInput.value.trim().toLowerCase();
+    searchClear.classList.toggle("show", query.length > 0);
+    render();
+  });
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { searchInput.value = ""; query = ""; searchClear.classList.remove("show"); render(); }
+  });
+  searchClear.addEventListener("click", () => {
+    searchInput.value = ""; query = ""; searchClear.classList.remove("show"); searchInput.focus(); render();
+  });
 
   // backdrop closes sheet — but only when the tap is *on the backdrop itself*.
   // Clicks on the sheet (or its buttons) bubble up to the backdrop; without this
