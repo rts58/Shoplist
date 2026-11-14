@@ -575,9 +575,24 @@
     field.focus({ preventScroll: false });
     const len = field.value.length;
     try { field.setSelectionRange(len, len); } catch (e) {}
+    // If the browser silently refused the synchronous focus (it happens on
+    // mobile when a blur just preceded it, or when the keyboard opens at the
+    // same instant), focus is not on the field. Retry on the next animation
+    // frame — still inside the user-gesture window on mobile — so the keyboard
+    // follows and the field is editable.
+    requestAnimationFrame(() => {
+      if (!sheetOpen) return;
+      if (document.activeElement !== field) {
+        try { field.focus({ preventScroll: true }); } catch (e) {}
+        const l = field.value.length;
+        try { field.setSelectionRange(l, l); } catch (e) {}
+      }
+    });
   }
   function openSheet(title, bodyHtml, actionsHtml) {
-    if (sheetOpen) closeSheet();
+    // Swapping from one sheet to another: skip the blur, because we are about to
+    // focus a fresh field in this same turn (see closeSheet's skipBlur note).
+    if (sheetOpen) closeSheet(true);
     sheetOpen = true;
     sheet.innerHTML = `<div class="grab"></div><h3>${esc(title)}</h3>${bodyHtml}${actionsHtml || ""}`;
     backdrop.classList.add("show");
@@ -589,11 +604,19 @@
     // appears. The focusin safety net below re-grabs focus if it is lost.)
     focusSheetField();
   }
-  function closeSheet() {
+  // `skipBlur` is used when we are about to immediately open a *new* sheet with
+  // a fresh field (the ⋯ → Edit transition). On mobile, blurring a field and
+  // then synchronously focusing another field in the same JS turn is refused by
+  // the browser: it has already committed to dismissing the keyboard, so the new
+  // focus is silently cancelled and the Edit sheet collapses (looking like a
+  // Cancel). We therefore keep the old field focused across the swap and let the
+  // new field's focus replace it in place — the keyboard stays up and the field
+  // is editable. On a genuine close we still blur to release the keyboard.
+  function closeSheet(skipBlur) {
     sheetOpen = false;
     backdrop.classList.remove("show");
     clearSheetPosition();
-    // Blur any focused field so the keyboard releases.
+    if (skipBlur) return;
     const f = sheet.querySelector("input.field, textarea.field");
     if (f) { try { f.blur(); } catch (e) {} }
   }
@@ -647,10 +670,15 @@
       `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px"><b>${esc(s.item.name)}</b></p>`,
       `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
     sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
-    sheet.querySelector('[data-act="edit"]').onclick = () => { closeSheet(); openEditItem(id); };
+    // Defer the swap to the next task. The Edit/Delete buttons below swap the
+    // sheet's innerHTML; on a touch tap the browser dispatches the `click` event
+    // *after* mousedown/mouseup, so a synchronous swap leaves a ghost click that
+    // lands on the backdrop and immediately closes the freshly-opened sheet.
+    // Waiting one tick lets that click finish against the original button first.
+    sheet.querySelector('[data-act="edit"]').onclick = () => { setTimeout(() => { closeSheet(true); openEditItem(id); }, 0); };
     sheet.querySelector('[data-act="del"]').onclick = () => {
       if (confirm(`Delete "${s.item.name}"?`)) { deleteItem(id, "stores"); }
-      closeSheet();
+      setTimeout(closeSheet, 0);
     };
   }
 
@@ -662,10 +690,13 @@
       `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px"><b>${esc(cat.name)}</b></p>`,
       `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
     sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
-    sheet.querySelector('[data-act="edit"]').onclick = () => { closeSheet(); openEditCategory(catId); };
+    // Defer the swap (see the same note in openItemMenu): a synchronous
+    // innerHTML swap on the tapped button leaves a ghost click that hits the
+    // backdrop and closes the new sheet.
+    sheet.querySelector('[data-act="edit"]').onclick = () => { setTimeout(() => { closeSheet(true); openEditCategory(catId); }, 0); };
     sheet.querySelector('[data-act="del"]').onclick = () => {
       if (confirm(`Delete "${cat.name}" and its ${cat.items.length} item(s)?`)) { deleteCategory(catId); }
-      closeSheet();
+      setTimeout(closeSheet, 0);
     };
   }
 
@@ -742,7 +773,7 @@
       </div>`).join("");
     openSheet("Manage stores", rows,
       `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>`);
-    sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(); openRenameStore(+b.dataset.mren); });
+    sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(true); openRenameStore(+b.dataset.mren); });
     sheet.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
     sheet.querySelector('[data-act="done"]').onclick = closeSheet;
   }
@@ -777,11 +808,11 @@
   contentEl.addEventListener("click", (e) => {
     const t = e.target.closest("[data-toggle],[data-del],[data-itemmenu],[data-catmenu],[data-edititem],[data-togglecat],[data-additem],[data-addcat],[data-editcat],[data-delcat],[data-sendall],[data-clear]");
     if (!t) return;
-    if (t.dataset.toggle !== undefined) toggleItem(t.dataset.toggle, state.tab);
-    else if (t.dataset.del !== undefined) deleteItem(t.dataset.del, state.tab);
-    else if (t.dataset.itemmenu !== undefined) openItemMenu(t.dataset.itemmenu);
-    else if (t.dataset.catmenu !== undefined) openCategoryMenu(t.dataset.catmenu);
-    else if (t.dataset.edititem !== undefined) openEditItem(t.dataset.edititem);
+    if (t.dataset.toggle !== undefined) { toggleItem(t.dataset.toggle, state.tab); }
+    else if (t.dataset.del !== undefined) { deleteItem(t.dataset.del, state.tab); }
+    else if (t.dataset.itemmenu !== undefined) { openItemMenu(t.dataset.itemmenu); }
+    else if (t.dataset.catmenu !== undefined) { openCategoryMenu(t.dataset.catmenu); }
+    else if (t.dataset.edititem !== undefined) { openEditItem(t.dataset.edititem); }
     else if (t.dataset.clear !== undefined) clearPurchased();
     else if (t.dataset.togglecat !== undefined) { state.openCats[t.dataset.togglecat] = !(state.openCats[t.dataset.togglecat] || !query); render(); }
     else if (t.dataset.additem !== undefined) openAddItem(t.dataset.additem);
@@ -803,8 +834,10 @@
   searchEl.addEventListener("input", () => { query = searchEl.value.trim().toLowerCase(); render(); });
   searchClear.addEventListener("click", () => { searchEl.value = ""; query = ""; render(); searchEl.focus(); });
 
-  // backdrop closes sheet
-  backdrop.addEventListener("click", closeSheet);
+  // backdrop closes sheet — but only when the tap is *on the backdrop itself*.
+  // Clicks on the sheet (or its buttons) bubble up to the backdrop; without this
+  // guard a click that lands on a button after a sheet swap would close the sheet.
+  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeSheet(); });
   // escape closes
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
 
@@ -814,7 +847,7 @@
   // ---- init ----
   render();
 
-  // service worker
+  // service worker (register on load; ignore unsupported/offline contexts)
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
   }

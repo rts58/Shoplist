@@ -1,4 +1,4 @@
-const CACHE = "shoplist-v1";
+const CACHE = "shoplist-v2"; // bumped: forces re-serve of the instrumented index.html
 const ASSETS = [
   "./index.html",
   "./manifest.json",
