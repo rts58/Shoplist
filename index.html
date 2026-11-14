@@ -53,8 +53,9 @@
   .brand { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
   .brand .dot { color: var(--accent); }
 
-  .stores { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .stores::-webkit-scrollbar { display: none; }
+  .stores { display: flex; align-items: center; gap: 8px; }
+  .stores-row { display: flex; gap: 8px; flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .stores-row::-webkit-scrollbar { display: none; }
   .pill {
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
     padding: 8px 14px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm);
@@ -74,6 +75,9 @@
   .store-tools { flex: 0 0 auto; display: flex; align-items: center; }
   .search-wrap { position: relative; margin-top: 12px; }
   .search-wrap.hidden { display: none; }
+  @media (orientation: portrait) {
+    .search-wrap { flex: 1 1 auto; min-width: 0; max-width: 50%; }
+  }
   .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
   .search { width: 100%; padding: 10px 34px 10px 38px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface); font-size: 16px; box-shadow: var(--shadow-sm); outline: none; }
   .search:focus { border-color: var(--accent); }
@@ -81,14 +85,22 @@
   .search-clear.show { display: inline-flex; }
 
 
-  .cat { margin-bottom: 12px; }
-  /* Category headers are plain cards (rounded + shadowed). Item rows are NOT
-     rounded cards — they sit flush inside the category, separated by hairlines,
-     with a trailing "⋯" button that opens an Edit / Delete menu (no swipe). */
-  .row-card { background: var(--surface); box-shadow: var(--shadow-sm); }
+  /* The whole category (header + items + footer) is one continuous card: a
+     single surface background, a single shadow, and rounded corners applied to
+     the section so the hairline separators inside read as one unified card.
+     overflow:hidden clips to the rounded corners; item content never overflows
+     its row so this is safe. */
+  .cat { margin-bottom: 16px; background: var(--surface); box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+  /* Item rows are NOT individual cards — they sit flush inside their card
+     container (.cat on the Stores tab, .list-card on My List / Purchased),
+     separated only by hairline borders. */
   .cat-body .item { border-top: 1px solid var(--separator); }
   .cat-body .item:first-child { border-top: none; }
-  .cat-header { display: flex; align-items: center; padding: 0 14px; border-radius: var(--radius); }
+  /* Category header + items + footer are all inside the single .cat card (see
+     above). The header/foot no longer need their own backgrounds, shadows, or
+     corner radii — the section's rounded corners + overflow:hidden clip them,
+     so the hairline separators read as one unified card. */
+  .cat-header { display: flex; align-items: center; padding: 0 14px; }
   .cat-head { display: flex; align-items: center; gap: 10px; padding: 14px 2px; text-align: left; background: transparent; flex: 1; min-width: 0; }
   .cat-head .chev { color: var(--text-3); transition: transform .2s; flex: 0 0 auto; }
 
@@ -97,13 +109,12 @@
   .menu-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: background .15s; }
   .menu-btn:active { background: var(--surface-2); }
   .cat-title { flex: 1; font-size: 17px; font-weight: 700; letter-spacing: -.2px; min-width: 0; }
-  /* The item body is a separate container below the header card. It is NOT
-     clipped by the card's overflow:hidden, so each item row can reveal its own
-     buttons. A small gap separates it from the header card. */
-  .cat-body { display: none; margin-top: 8px; }
+  /* The item body sits flush against the header (no gap) so header + items +
+     footer read as one continuous card inside the .cat section. */
+  .cat-body { display: none; margin-top: 0; }
   .cat-body.open { display: block; }
   .cat-head.open .chev { transform: rotate(90deg); }
-  .cat-foot { display: flex; }
+  .cat-foot { display: flex; border-top: 1px solid var(--separator); }
   .cat-add { flex: 1; padding: 12px 16px; font-size: 15px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
   .cat-add:active { background: var(--surface-2); }
   .item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; position: relative; }
@@ -311,14 +322,16 @@
 
   // ---- render: stores pills ----
   function renderStores() {
-    let html = "";
+    let pills = "";
     state.stores.forEach((s, i) => {
       const active = i === state.activeStore ? " active" : "";
-      html += `<button class="pill${active}" data-store="${i}">${esc(s.name)}</button>`;
+      pills += `<button class="pill${active}" data-store="${i}">${esc(s.name)}</button>`;
     });
-    html += `<button class="pill add" data-addstore="1">${PLUS_SVG}Add store</button>`;
-    html += `<div class="store-tools"><button class="icon-btn" data-manage="1" aria-label="Manage stores">${MANAGE_SVG}</button></div>`;
-    storesEl.innerHTML = html;
+    pills += `<button class="pill add" data-addstore="1">${PLUS_SVG}Add store</button>`;
+    // Pills scroll horizontally in .stores-row; the manage button is pinned to
+    // the right edge (margin-left:auto) and never scrolls away.
+    storesEl.innerHTML = `<div class="stores-row">${pills}</div>` +
+      `<div class="store-tools"><button class="icon-btn" data-manage="1" aria-label="Manage stores">${MANAGE_SVG}</button></div>`;
   }
 
   // ---- render: a single item row ----
@@ -332,7 +345,10 @@
     // every item row. ctx is the category object (Stores tab) or the string
     // "list" (My List tab) — both get a menu.
     const menu = `<button class="menu-btn" data-itemmenu="${item.id}" aria-label="Item menu">${DOTS_SVG}</button>`;
-    return `<div class="item row-card${on}" data-item="${item.id}">
+    // Items sit inside a card container (.cat on the Stores tab, .list-card on
+    // My List / Purchased) that provides the surface background + single shadow,
+    // so each row needs no card of its own — just the hairline separators.
+    return `<div class="item${on}" data-item="${item.id}">
       <button class="check" data-toggle="${item.id}" aria-label="Toggle">${CHECK_SVG}</button>
       <span class="name">${esc(item.name)}${tag}</span>
       ${menu}
@@ -371,7 +387,7 @@
         <div class="cat-foot"><button class="cat-add" data-additem="${cat.id}">${PLUS_SVG}Add item</button></div>
       </div>`;
       html += `<section class="cat" data-cat="${cat.id}">
-        <div class="cat-header row-card">${catHead}</div>
+        <div class="cat-header">${catHead}</div>
         ${catBody}
       </section>`;
     });
