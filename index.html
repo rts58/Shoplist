@@ -175,7 +175,7 @@
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .sheet .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--separator); margin: 6px auto 14px; }
   .sheet h3 { margin: 0 0 14px; font-size: 18px; font-weight: 700; text-align: center; }
-  .sheet-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .sheet-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
   .btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; background: var(--surface-2); }
   .btn:active { opacity: .8; }
   .btn.primary { background: var(--accent); color: #fff; }
@@ -322,6 +322,11 @@
     return item.name.toLowerCase().includes(query);
   }
 
+  // Alphabetical comparator (localeCompare with numeric:true so "Apple 2" sorts
+  // before "Apple 10"). Used to sort items A–Z; the underlying array is never
+  // reordered, so storage order stays stable (items are always added at the end).
+  const byName = (a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+
   // The search box only exists on the Stores tab. On the My List tab we hide it
   // and clear any in-flight query so the list is never filtered.
   function updateSearchVisibility() {
@@ -459,7 +464,8 @@
       // user made (openCats[cat.id] === false). Under search: force expanded so
       // the matched item is always visible (the user can still collapse).
       const open = query ? true : (state.openCats[cat.id] !== false);
-      let body = items.map((it) => itemRow(it, cat)).join("");
+      // Items render A–Z (a sorted copy of the filtered set); storage order is untouched.
+      let body = [...items].sort(byName).map((it) => itemRow(it, cat)).join("");
       if (!items.length) body = `<div class="empty" style="padding:20px">Nothing here yet.</div>`;
       // The header is a plain card: an expand button (chevron + title + count)
       // plus a trailing "⋯" button that opens the category's Edit / Delete menu.
@@ -548,8 +554,10 @@
     const out = [];
     const store = state.stores[state.activeStore];
     if (!store) return out;
+    // Categories keep their manual (user-ordered) sequence; items within each
+    // category are sorted A–Z. Sorting a copy keeps the stored order stable.
     store.categories.forEach((cat) => {
-      cat.items.forEach((it) => {
+      [...cat.items].sort(byName).forEach((it) => {
         out.push({ ...it, store: store.name, cat: cat.name });
       });
     });
@@ -648,6 +656,18 @@
     store.categories.splice(idx, 1);
     render();
     toast("Category removed");
+  }
+
+  function moveCategory(catId, dir) {
+    const store = state.stores[state.activeStore];
+    if (!store) return;
+    const idx = store.categories.findIndex((c) => c.id === catId);
+    if (idx < 0) return;
+    const j = idx + dir; // dir is -1 (up) or 1 (down)
+    if (j < 0 || j >= store.categories.length) return; // already at the edge
+    const cats = store.categories;
+    [cats[idx], cats[j]] = [cats[j], cats[idx]];
+    render();
   }
 
   function addStore(name) {
@@ -823,8 +843,12 @@
     if (!cat) return;
     openSheet("Category options",
       `<p style="text-align:center;color:var(--text-2);margin:4px 0 8px"><b>${esc(cat.name)}</b></p>`,
-      `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
+      `<div class="sheet-actions"><button class="btn" data-act="cancel">Close</button><button class="btn" data-act="up">Move ↑</button><button class="btn" data-act="down">Move ↓</button><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="del">Delete</button></div>`);
     sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
+    // Move up/down reorders the category and re-renders; the sheet stays open
+    // (its actions are bound directly, not via data-action delegation).
+    sheet.querySelector('[data-act="up"]').onclick = () => moveCategory(catId, -1);
+    sheet.querySelector('[data-act="down"]').onclick = () => moveCategory(catId, 1);
     // Defer the swap (see the same note in openItemMenu): a synchronous
     // innerHTML swap on the tapped button leaves a ghost click that hits the
     // backdrop and closes the new sheet.
@@ -918,7 +942,20 @@
     // Send the items the user still needs to buy (selected, not yet purchased).
     const pending = storeItems().filter((i) => i.done && !i.purchased);
     if (!pending.length) { toast("Nothing to send yet"); return; }
-    const lines = pending.map((i) => `- ${i.name}${i.cat ? " (" + i.cat + ")" : ""}`).join("\n");
+    // Group into sections that follow the manual category order; items within
+    // each section are A–Z. storeItems() is already category-ordered with items
+    // sorted, so a single ordered pass keeps section order stable.
+    const sections = [];
+    const byCat = new Map();
+    pending.forEach((i) => {
+      const key = i.cat || "";
+      if (!byCat.has(key)) { byCat.set(key, []); sections.push(key); }
+      byCat.get(key).push(i);
+    });
+    const lines = sections.map((cat) => {
+      const rows = byCat.get(cat).map((i) => `- ${i.name}${cat ? " (" + cat + ")" : ""}`);
+      return rows.join("\n");
+    }).join("\n");
     const storeName = state.stores[state.activeStore]?.name || "";
     const msg = `Shopping list — ${storeName}:\n` + lines;
     openSheet("Text list via SMS",
