@@ -27,6 +27,7 @@ Shopping list — Whole Foods:
 - **Works offline** — a service worker caches the app, so it loads and runs with no connection.
 - **Installs like an app** — use your browser's *Add to Home Screen* to get a full-screen, icon-bearing app.
 - **100% local** — no server, no tracking, no sign-up. Your data never leaves your phone.
+- **Backup & restore** — export everything to a JSON file and restore it anywhere (see [Backups](#-backups)).
 
 ---
 
@@ -38,7 +39,7 @@ Shopping list — Whole Foods:
 2. Tap your browser's **Share / Menu** button, then choose **Add to Home Screen**.
 3. Launch it from the home-screen icon — it runs full-screen and works offline.
 
-> ⚠️ **Your list is tied to the browser on that device.** Data is stored in that browser's `localStorage` under the key `shoplist.v1`. Clearing browsing data, or using a different browser/device, starts you with a fresh list. There is no sync or cloud backup.
+> ⚠️ **Your list is tied to the browser on that device.** Data is stored in that browser's `localStorage` under the key `shoplist.v1`. Clearing browsing data, or using a different browser/device, starts you with a fresh list. There is no automatic sync or cloud backup — but you can [export a backup](#-backups) and restore it elsewhere.
 
 ### Run it locally
 
@@ -51,6 +52,31 @@ python3 -m http.server 8000
 ```
 
 Any static file server works (`npx serve`, `php -S localhost:8000`, etc.).
+
+---
+
+## 💾 Backups
+
+Because everything lives in one browser, your list is at the mercy of that browser — **clearing browsing data or switching devices wipes it.** There's no sync, so a backup is your safety net.
+
+From **Stores → ⋮ → Manage stores**, use the **Backup** row:
+
+- **Export** — downloads your entire list (every store, category, and item) as `shoplist-backup.json`.
+- **Import** — picks a backup file and restores it.
+
+> ⚠️ **Import replaces everything.** Restoring a backup overwrites your *current* list in full — stores you added since the backup was made are gone. Shoplist has no merge. Make a fresh export before importing an older backup if you want to keep both.
+
+The backup file is a small, self-describing JSON document you can keep anywhere (email, cloud drive, an USB stick, a git repo):
+
+```json
+{
+  "app": "shoplist",
+  "version": 1,
+  "data": { "stores": [ "…your full list…" ] }
+}
+```
+
+Import is forgiving: it accepts either the envelope above or a raw state blob, validates it, and asks you to confirm before touching your list.
 
 ---
 
@@ -117,7 +143,7 @@ Since there's no build step, developing is just editing `index.html` and refresh
 python3 -m http.server 8000
 ```
 
-**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v6";` → `v7`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
+**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v7";` → `v8`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
 
 ### Project structure
 
