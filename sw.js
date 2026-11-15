@@ -1,7 +1,9 @@
-const CACHE = "shoplist-v2"; // bumped: forces re-serve of the instrumented index.html
+const CACHE = "shoplist-v3"; // bumped: adds bag PNG icons (180/512) for the home screen
 const ASSETS = [
   "./index.html",
   "./manifest.json",
+  "./icons/icon-180.png",
+  "./icons/icon-512.png",
   "./icons/icon.svg"
 ];
 
