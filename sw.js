@@ -1,4 +1,4 @@
-const CACHE = "shoplist-v3"; // bumped: adds bag PNG icons (180/512) for the home screen
+const CACHE = "shoplist-v6"; // bumped: track keyboard settle so new item lands above tab bar
 const ASSETS = [
   "./index.html",
   "./manifest.json",

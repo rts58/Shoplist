@@ -118,7 +118,7 @@
      corner radii — the section's rounded corners + overflow:hidden clip them,
      so the hairline separators read as one unified card. */
   .cat-header { display: flex; align-items: center; padding: 0 14px; }
-  .cat-head { display: flex; align-items: center; gap: 10px; padding: 14px 2px; text-align: left; background: transparent; flex: 1; min-width: 0; }
+  .cat-head { display: flex; align-items: center; gap: 10px; padding: 10px 2px; text-align: left; background: transparent; flex: 1; min-width: 0; }
   .cat-head .chev { color: var(--text-3); transition: transform .2s; flex: 0 0 auto; }
 
   .content { flex: 1; padding: 16px; padding-bottom: calc(16px + var(--tabbar-h) + var(--safe-bottom)); }
@@ -132,9 +132,9 @@
   .cat-body.open { display: block; }
   .cat-head.open .chev { transform: rotate(90deg); }
   .cat-foot { display: flex; border-top: 1px solid var(--separator); }
-  .cat-add { flex: 1; padding: 12px 16px; font-size: 15px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .cat-add { flex: 1; padding: 9px 16px; font-size: 15px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
   .cat-add:active { background: var(--surface-2); }
-  .item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; position: relative; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 9px 16px; position: relative; }
   .item .name { flex: 1; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item .item-tag { font-size: 12px; font-weight: 600; color: var(--text-3); margin-left: 8px; }
   .item.on .name { color: var(--text-3); text-decoration: line-through; }
@@ -370,6 +370,76 @@
       <span class="name">${esc(item.name)}${tag}</span>
       ${menu}
     </div>`;
+  }
+
+  // After adding an item, scroll so the newly-added item and the "Add item"
+  // row beneath it are both visible, fully ABOVE the fixed tab bar.
+  //
+  // Why this is fiddly: closing the sheet releases the on-screen keyboard, which
+  // animates the layout viewport back to full height over a few hundred ms. If
+  // we measure *during* that animation (a fixed setTimeout guess, which is what
+  // the earlier versions did), window.innerHeight / the element rects are still
+  // inflated to the keyboard-shrunk viewport, so the computed scroll lands
+  // several rows too low — worst for categories further down the list.
+  //
+  // So instead of a guessed delay we re-measure and re-scroll every animation
+  // frame until the keyboard has actually settled (the visual viewport stops
+  // changing and the body height stabilizes). We anchor the measurement to the
+  // *visual* viewport (the true rendered viewport, not the layout one) and
+  // scroll the newly-added item so its bottom rests a small gap above the tab
+  // bar, with the "Add item" row sitting right beneath it.
+  function recenterAddItemRow(catId) {
+    const vv = window.visualViewport;
+    let lastH = -1, lastBodyH = -1, stable = 0, tries = 0;
+
+    function measure() {
+      const catEl = document.querySelector(`.cat[data-cat="${catId}"]`);
+      if (!catEl) return;
+      const foot = catEl.querySelector(".cat-foot");
+      const lastItem = catEl.querySelector(".cat-body .item:last-of-type");
+      const target = lastItem || (foot ? foot.querySelector(".cat-add") : null) || catEl;
+      if (!target) return;
+
+      // The page is the scroll container (the .content element is flex:1, not
+      // overflow:auto). Use the document's scrolling element.
+      const scroller = document.scrollingElement || document.documentElement;
+
+      // True rendered viewport height. With the keyboard open, visualViewport
+      // is the shrunk height; once it closes it equals the layout height.
+      const vh = vv ? vv.height : window.innerHeight;
+
+      // Visible bottom of the page, in viewport coordinates (0..vh).
+      const pageBottom = (vv ? vv.offsetTop : 0) + vh;
+
+      const tRect = target.getBoundingClientRect();
+      const tabbar = document.querySelector(".tabbar");
+      const tabTop = tabbar ? tabbar.getBoundingClientRect().top : pageBottom;
+      const visibleBottom = Math.min(pageBottom, tabTop); // keep clear of tab bar
+
+      // Scroll so the target's bottom sits a small gap above the visible bottom.
+      const GAP = 8;
+      let desired = scroller.scrollTop + (tRect.bottom - visibleBottom) + GAP;
+      // Clamp to the maximum scrollable position so we never overshoot.
+      const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      desired = Math.max(0, Math.min(desired, maxScroll));
+
+      scroller.scrollTop = desired;
+
+      // Detect that the keyboard has settled: the visual viewport and the page
+      // height have both stopped changing across consecutive frames.
+      const bodyH = document.body.scrollHeight;
+      const changed = lastH !== vh || lastBodyH !== bodyH;
+      lastH = vh; lastBodyH = bodyH;
+      stable = changed ? 0 : stable + 1;
+      tries++;
+
+      // Keep going until settled (2 stable frames) or a hard safety cap.
+      if (stable < 2 && tries < 40) requestAnimationFrame(measure);
+    }
+
+    // Small initial pause lets closeSheet() blur the field and start the
+    // keyboard-dismiss, then we track it to rest on rAF (not a guessed delay).
+    setTimeout(() => requestAnimationFrame(measure), 40);
   }
 
   // ---- render: active store (Stores tab) ----
@@ -703,8 +773,11 @@
       `<div class="sheet-actions"><button class="btn" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Add</button></div>`);
     sheet.querySelector('[data-act="save"]').onclick = () => {
       const v = sheet.querySelector("#f").value.trim();
-      if (v) addItemToStore(catId, v);
-      closeSheet();
+      if (v) {
+        addItemToStore(catId, v);
+        closeSheet();
+        recenterAddItemRow(catId);
+      }
     };
     sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
     sheet.querySelector("#f").onkeydown = (e) => { if (e.key === "Enter") sheet.querySelector('[data-act="save"]').click(); };

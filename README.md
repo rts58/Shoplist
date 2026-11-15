@@ -117,7 +117,7 @@ Since there's no build step, developing is just editing `index.html` and refresh
 python3 -m http.server 8000
 ```
 
-**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v3";` → `v4`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
+**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v6";` → `v7`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
 
 ### Project structure
 
