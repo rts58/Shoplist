@@ -1,4 +1,4 @@
-const CACHE = "shoplist-v7"; // bumped: add backup export/import
+const CACHE = "shoplist-v8"; // bumped: Clear now removes only Purchased items
 const ASSETS = [
   "./index.html",
   "./manifest.json",

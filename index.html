@@ -607,18 +607,20 @@
   }
 
   function clearPurchased() {
-    // Un-check the store items that are in the active store's list, so they
-    // drop out of My List and back to an unselected state in the store.
+    // Clear only the purchased items in the active store's list. Un-checking
+    // them (done → false) drops them out of My List and back to an unselected
+    // state in the store. Items still in "To buy" (done, not purchased) are
+    // left untouched.
     const store = state.stores[state.activeStore];
     if (!store) return;
     let removed = 0;
     store.categories.forEach((cat) => {
       cat.items.forEach((it) => {
-        if (it.done) { it.done = false; it.purchased = false; removed++; }
+        if (it.purchased) { it.done = false; it.purchased = false; removed++; }
       });
     });
     render();
-    toast(removed ? `Cleared ${removed} item${removed > 1 ? "s" : ""} from list` : "Nothing to clear");
+    toast(removed ? `Cleared ${removed} purchased item${removed > 1 ? "s" : ""}` : "Nothing to clear");
   }
 
   function addCategory(name) {
