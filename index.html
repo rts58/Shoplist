@@ -231,6 +231,7 @@
 
 <div class="modal-backdrop" id="backdrop"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden />
 </body>
 <script>
 (function () {
@@ -299,6 +300,7 @@
   const sheet = $("#sheet");
   const toastEl = $("#toast");
   const listBadge = $("#listBadge");
+  const importFile = $("#importFile");
   const tabs = Array.from(document.querySelectorAll(".tab"));
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -930,11 +932,77 @@
         <button class="list-send" data-mren="${i}">Rename</button>
         <button class="list-send" style="color:var(--danger)" data-mdel="${i}">Delete</button>
       </div>`).join("");
+    rows += `<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--separator)">
+      <span style="flex:1;font-weight:600">Backup</span>
+      <button class="list-send" data-mexp="1">Export</button>
+      <button class="list-send" data-mimp="1">Import</button>
+    </div>`;
     openSheet("Manage stores", rows,
       `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>`);
     sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(true); openRenameStore(+b.dataset.mren); });
     sheet.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
+    sheet.querySelector("[data-mexp]").onclick = exportBackup;
+    sheet.querySelector("[data-mimp]").onclick = () => importFile.click();
     sheet.querySelector('[data-act="done"]').onclick = closeSheet;
+  }
+
+  // ---- backup: export / import ----
+  // The whole app is one JSON blob in localStorage, so a backup is simply that
+  // blob written to a file the user keeps somewhere safe, and a restore reads
+  // it back. We wrap it in a versioned envelope so the file is self-describing
+  // and can be validated (and future-proofed) on import.
+  const BACKUP_APP = "shoplist";
+  const BACKUP_VERSION = 1;
+  const BACKUP_FILE = "shoplist-backup.json";
+
+  function exportBackup() {
+    const envelope = { app: BACKUP_APP, version: BACKUP_VERSION, data: state };
+    const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = BACKUP_FILE;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Revoke on the next tick so the download has a chance to start.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    toast("Backup downloaded");
+  }
+
+  // Validate a parsed envelope and return a normalized state, or null.
+  function parseBackup(text) {
+    let env;
+    try { env = JSON.parse(text); } catch (e) { return null; }
+    // Accept both the envelope and a bare state blob.
+    const d = (env && env.app === BACKUP_APP) ? env.data : env;
+    if (!d || !Array.isArray(d.stores)) return null;
+    const s = {
+      stores: d.stores,
+      activeStore: (typeof d.activeStore === "number" && d.activeStore >= 0 && d.activeStore < d.stores.length) ? d.activeStore : 0,
+      openCats: d.openCats || {},
+      tab: d.tab || "list"
+    };
+    return s;
+  }
+
+  function importBackup(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const next = parseBackup(String(reader.result));
+      if (!next) { toast("Not a valid backup file"); return; }
+      if (!confirm("Replace your current stores with this backup? This will overwrite everything.")) return;
+      state = next;
+      query = "";
+      searchInput.value = "";
+      searchClear.classList.remove("show");
+      save();
+      render();
+      closeSheet();
+      toast("Backup restored");
+    };
+    reader.onerror = () => toast("Could not read file");
+    reader.readAsText(file);
   }
 
   // ---- SMS ----
@@ -1019,6 +1087,12 @@
   });
   searchClear.addEventListener("click", () => {
     searchInput.value = ""; query = ""; searchClear.classList.remove("show"); searchInput.focus(); render();
+  });
+
+  // backup import: the hidden file input is triggered from the Manage sheet.
+  importFile.addEventListener("change", () => {
+    if (importFile.files && importFile.files[0]) importBackup(importFile.files[0]);
+    importFile.value = ""; // allow re-importing the same file
   });
 
   // backdrop closes sheet — but only when the tap is *on the backdrop itself*.

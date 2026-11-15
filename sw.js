@@ -1,4 +1,4 @@
-const CACHE = "shoplist-v6"; // bumped: track keyboard settle so new item lands above tab bar
+const CACHE = "shoplist-v7"; // bumped: add backup export/import
 const ASSETS = [
   "./index.html",
   "./manifest.json",
