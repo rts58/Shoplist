@@ -117,7 +117,7 @@ Since there's no build step, developing is just editing `index.html` and refresh
 python3 -m http.server 8000
 ```
 
-**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v2";` → `v3`) to force a refresh, or unregister it from devtools.
+**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v3";` → `v4`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
 
 ### Project structure
 
@@ -127,7 +127,9 @@ Shoplist/
 ├── manifest.json     # PWA manifest
 ├── sw.js             # service worker (offline cache)
 ├── icons/
-│   └── icon.svg      # app icon
+│   ├── icon.svg      # app icon (browsers)
+│   ├── icon-180.png  # home-screen icon (iOS apple-touch-icon)
+│   └── icon-512.png  # manifest / maskable icon
 ├── LICENSE           # GPL-3.0-or-later
 └── README.md
 ```
