@@ -121,7 +121,7 @@
   .cat-head { display: flex; align-items: center; gap: 10px; padding: 14px 2px; text-align: left; background: transparent; flex: 1; min-width: 0; }
   .cat-head .chev { color: var(--text-3); transition: transform .2s; flex: 0 0 auto; }
 
-  .content { flex: 1; padding: 16px; }
+  .content { flex: 1; padding: 16px; padding-bottom: calc(16px + var(--tabbar-h) + var(--safe-bottom)); }
   /* "⋯" action button at the right of a row. Tapping opens the row's menu. */
   .menu-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: background .15s; }
   .menu-btn:active { background: var(--surface-2); }
