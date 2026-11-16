@@ -31,9 +31,26 @@ Shopping list — Whole Foods:
 
 ---
 
-## 📱 Getting started
+## 📸 Here's what it looks like
 
-### Use the hosted app
+The **My List** view — your selected items, split into **To buy** and **Purchased**, with one tap to text the list.
+
+<p align="center">
+  <img src="images/my-list.png" alt="My List view — to-buy and purchased items with a 'Text list via SMS' button" width="260" />
+</p>
+
+---
+
+> **Just want to use the app?** Jump to [👋 For users](#-for-users) — it's everything you need to install and use it.
+> **Building or contributing?** Jump to [🛠️ For developers](#-for-developers).
+
+---
+
+## 👋 For users
+
+Everything in this section is what you need to use Shoplist on your own phone.
+
+### Install the app
 
 1. Open the app URL in your phone's browser (e.g. `https://rts58.github.io/Shoplist/`).
 2. Tap your browser's **Share / Menu** button, then choose **Add to Home Screen**.
@@ -41,21 +58,28 @@ Shopping list — Whole Foods:
 
 > ⚠️ **Your list is tied to the browser on that device.** Data is stored in that browser's `localStorage` under the key `shoplist.v1`. Clearing browsing data, or using a different browser/device, starts you with a fresh list. There is no automatic sync or cloud backup — but you can [export a backup](#-backups) and restore it elsewhere.
 
-### Run it locally
+### Using the app
 
-There's nothing to install or build — it's a static site:
+- **Items** — your stores, categories, and items. Checking an item *selects* it for your list.
+- **My List** — the items you've selected, split into **To buy** and **Purchased**. Checking an item here moves it from *To buy* to *Purchased*.
+- **SMS** — one tap opens your carrier's messaging app with your to-buy items pre-filled (or copy to clipboard).
+- **Search** — filter items within the current store.
+- **Clear** — in the **Purchased** group, clears only the purchased items, leaving your *To buy* list intact.
 
-```bash
-# from the repo root
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
+<table>
+  <tr>
+    <th align="center">Items</th>
+    <th align="center">My List</th>
+    <th align="center">Manage stores</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/items.png" alt="Items view — stores, expandable categories, and checkboxes" width="200" /></td>
+    <td align="center"><img src="images/my-list.png" alt="My List view — to-buy and purchased items" width="200" /></td>
+    <td align="center"><img src="images/manage-stores.png" alt="Manage stores sheet — rename, delete, and backup rows" width="200" /></td>
+  </tr>
+</table>
 
-Any static file server works (`npx serve`, `php -S localhost:8000`, etc.).
-
----
-
-## 💾 Backups
+### Backups
 
 Because everything lives in one browser, your list is at the mercy of that browser — **clearing browsing data or switching devices wipes it.** There's no sync, so a backup is your safety net.
 
@@ -63,6 +87,10 @@ From **Stores → ⋮ → Manage stores**, use the **Backup** row:
 
 - **Export** — downloads your entire list (every store, category, and item) as `shoplist-backup.json`.
 - **Import** — picks a backup file and restores it.
+
+<p align="center">
+  <img src="images/manage-stores.png" alt="Manage stores bottom sheet with rename, delete, and backup export/import rows" width="280" />
+</p>
 
 > ⚠️ **Import replaces everything.** Restoring a backup overwrites your *current* list in full — stores you added since the backup was made are gone. Shoplist has no merge. Make a fresh export before importing an older backup if you want to keep both.
 
@@ -80,17 +108,25 @@ Import is forgiving: it accepts either the envelope above or a raw state blob, v
 
 ---
 
-## 🏗️ How it's built
+## 🛠️ For developers
+
+Everything in this section is for building, running, and deploying Shoplist.
+
+### Run it locally
+
+There's nothing to install or build — it's a static site:
+
+```bash
+# from the repo root
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+Any static file server works (`npx serve`, `php -S localhost:8000`, etc.).
+
+### How it's built
 
 Shoplist is intentionally a **zero-dependency, single-file** app. The entire UI and logic live in `index.html` (markup + CSS + vanilla JavaScript). There are no npm packages, no framework, and no compiler.
-
-| File | Purpose |
-|---|---|
-| `index.html` | The whole app — HTML, CSS, and JavaScript in one file. |
-| `manifest.json` | Web app manifest — name, theme colors, icon, and standalone display. |
-| `sw.js` | Service worker — caches the app for offline use. |
-| `icons/icon.svg` | App icon (vector). |
-| `LICENSE` | License terms (GPL-3.0-or-later). |
 
 **State model.** Everything is one plain object, persisted to `localStorage`:
 
@@ -118,32 +154,11 @@ Shoplist is intentionally a **zero-dependency, single-file** app. The entire UI 
 
 The service worker uses a network-first strategy for the page (so you always get the latest version when online) and falls back to the cache when offline, plus cache-first for static assets.
 
----
+Every row (store, category, item) has a **⋮** menu that opens a bottom sheet — e.g. the *Category options* sheet for a category lets you move it up/down, rename, or delete it.
 
-## 🚀 Deploying on GitHub Pages
-
-Because the app is a static site, the easiest way to share it is **GitHub Pages** — free, always-on HTTPS hosting.
-
-1. Push the repo to GitHub (see [Development](#-development)).
-2. In the repo, go to **Settings → Pages**.
-3. Set **Source** to *Deploy from a branch* → **`main`** branch, root **`/`** → **Save**.
-4. Your app is live at `https://rts58.github.io/Shoplist/`.
-5. Send that URL to friends; they *Add to Home Screen* and they're set.
-
-> The repository name must match the Pages URL (here: `Shoplist`). Pages serves the branch root, so no extra path configuration is needed.
-
----
-
-## 🔧 Development
-
-Since there's no build step, developing is just editing `index.html` and refreshing.
-
-```bash
-# serve locally
-python3 -m http.server 8000
-```
-
-**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v8";` → `v9`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
+<p align="center">
+  <img src="images/category-options.png" alt="Category options bottom sheet — close, move up/down, edit, delete" width="260" />
+</p>
 
 ### Project structure
 
@@ -156,9 +171,32 @@ Shoplist/
 │   ├── icon.svg      # app icon (browsers)
 │   ├── icon-180.png  # home-screen icon (iOS apple-touch-icon)
 │   └── icon-512.png  # manifest / maskable icon
+├── images/           # README screenshots
+│   ├── my-list.png
+│   ├── items.png
+│   ├── manage-stores.png
+│   └── category-options.png
 ├── LICENSE           # GPL-3.0-or-later
 └── README.md
 ```
+
+### Deploying on GitHub Pages
+
+Because the app is a static site, the easiest way to share it is **GitHub Pages** — free, always-on HTTPS hosting.
+
+1. Push the repo to GitHub.
+2. In the repo, go to **Settings → Pages**.
+3. Set **Source** to *Deploy from a branch* → **`main`** branch, root **`/`** → **Save**.
+4. Your app is live at `https://rts58.github.io/Shoplist/`.
+5. Send that URL to friends; they *Add to Home Screen* and they're set.
+
+> The repository name must match the Pages URL (here: `Shoplist`). Pages serves the branch root, so no extra path configuration is needed.
+
+### Development tips
+
+There's no build step — developing is just editing `index.html` and refreshing.
+
+**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v8";` → `v9`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
 
 ---
 
