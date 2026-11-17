@@ -1,0 +1,316 @@
+{
+  "app": "shoplist",
+  "version": 1,
+  "data": {
+    "stores": [
+      {
+        "id": "starter-store-grocery",
+        "name": "Grocery",
+        "categories": [
+          {
+            "id": "starter-cat-produce",
+            "name": "Produce",
+            "items": [
+              { "id": "starter-item-banana", "name": "Bananas", "done": false },
+              { "id": "starter-item-apple", "name": "Apples", "done": false },
+              { "id": "starter-item-orange", "name": "Oranges", "done": false },
+              { "id": "starter-item-grapes", "name": "Grapes", "done": false },
+              { "id": "starter-item-avocado", "name": "Avocados", "done": false },
+              { "id": "starter-item-tomato", "name": "Tomatoes", "done": false },
+              { "id": "starter-item-cucumber", "name": "Cucumbers", "done": false },
+              { "id": "starter-item-spinach", "name": "Spinach", "done": false },
+              { "id": "starter-item-lettuce", "name": "Lettuce", "done": false },
+              { "id": "starter-item-carrot", "name": "Carrots", "done": false },
+              { "id": "starter-item-broccoli", "name": "Broccoli", "done": false },
+              { "id": "starter-item-pepper", "name": "Bell Peppers", "done": false },
+              { "id": "starter-item-onion", "name": "Onions", "done": false },
+              { "id": "starter-item-garlic", "name": "Garlic", "done": false },
+              { "id": "starter-item-potato", "name": "Potatoes", "done": false },
+              { "id": "starter-item-sweetpotato", "name": "Sweet Potatoes", "done": false },
+              { "id": "starter-item-lemon", "name": "Lemons", "done": false },
+              { "id": "starter-item-lime", "name": "Limes", "done": false },
+              { "id": "starter-item-cilantro", "name": "Cilantro", "done": false },
+              { "id": "starter-item-parsley", "name": "Parsley", "done": false },
+              { "id": "starter-item-mushroom", "name": "Mushrooms", "done": false },
+              { "id": "starter-item-pear", "name": "Pears", "done": false },
+              { "id": "starter-item-peach", "name": "Peaches", "done": false },
+              { "id": "starter-item-berries", "name": "Berries", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-dairy",
+            "name": "Dairy",
+            "items": [
+              { "id": "starter-item-milk", "name": "Milk", "done": false },
+              { "id": "starter-item-eggs", "name": "Eggs", "done": false },
+              { "id": "starter-item-butter", "name": "Butter", "done": false },
+              { "id": "starter-item-cheddar", "name": "Cheddar Cheese", "done": false },
+              { "id": "starter-item-mozzarella", "name": "Mozzarella", "done": false },
+              { "id": "starter-item-greek-yogurt", "name": "Greek Yogurt", "done": false },
+              { "id": "starter-item-sour-cream", "name": "Sour Cream", "done": false },
+              { "id": "starter-item-cream", "name": "Heavy Cream", "done": false },
+              { "id": "starter-item-parmesan", "name": "Parmesan", "done": false },
+              { "id": "starter-item-cream-cheese", "name": "Cream Cheese", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-bakery",
+            "name": "Bakery",
+            "items": [
+              { "id": "starter-item-sourdough", "name": "Sourdough", "done": false },
+              { "id": "starter-item-bagels", "name": "Bagels", "done": false },
+              { "id": "starter-item-buns", "name": "Burger Buns", "done": false },
+              { "id": "starter-item-tortillas", "name": "Tortillas", "done": false },
+              { "id": "starter-item-croissant", "name": "Croissants", "done": false },
+              { "id": "starter-item-baguette", "name": "Baguette", "done": false },
+              { "id": "starter-item-pita", "name": "Pita Bread", "done": false },
+              { "id": "starter-item-cake", "name": "Cake", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-meat",
+            "name": "Meat & Seafood",
+            "items": [
+              { "id": "starter-item-chicken", "name": "Chicken Breast", "done": false },
+              { "id": "starter-item-chicken-thighs", "name": "Chicken Thighs", "done": false },
+              { "id": "starter-item-ground-beef", "name": "Ground Beef", "done": false },
+              { "id": "starter-item-steak", "name": "Steak", "done": false },
+              { "id": "starter-item-pork", "name": "Pork Chops", "done": false },
+              { "id": "starter-item-sausage", "name": "Sausage", "done": false },
+              { "id": "starter-item-bacon", "name": "Bacon", "done": false },
+              { "id": "starter-item-salmon", "name": "Salmon", "done": false },
+              { "id": "starter-item-shrimp", "name": "Shrimp", "done": false },
+              { "id": "starter-item-turkey", "name": "Turkey", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-pantry",
+            "name": "Pantry",
+            "items": [
+              { "id": "starter-item-rice", "name": "Rice", "done": false },
+              { "id": "starter-item-pasta", "name": "Pasta", "done": false },
+              { "id": "starter-item-oats", "name": "Oatmeal", "done": false },
+              { "id": "starter-item-baking-flour", "name": "Flour", "done": false },
+              { "id": "starter-item-cooking-oil", "name": "Cooking Oil", "done": false },
+              { "id": "starter-item-olive-oil", "name": "Olive Oil", "done": false },
+              { "id": "starter-item-canned-tomato", "name": "Canned Tomatoes", "done": false },
+              { "id": "starter-item-canned-beans", "name": "Canned Beans", "done": false },
+              { "id": "starter-item-broth", "name": "Broth / Stock", "done": false },
+              { "id": "starter-item-sugar", "name": "Sugar", "done": false },
+              { "id": "starter-item-peanut-butter", "name": "Peanut Butter", "done": false },
+              { "id": "starter-item-jam", "name": "Jam", "done": false },
+              { "id": "starter-item-honey", "name": "Honey", "done": false },
+              { "id": "starter-item-salt", "name": "Salt", "done": false },
+              { "id": "starter-item-black-pepper", "name": "Black Pepper", "done": false },
+              { "id": "starter-item-vinegar", "name": "Vinegar", "done": false },
+              { "id": "starter-item-soy-sauce", "name": "Soy Sauce", "done": false },
+              { "id": "starter-item-nuts", "name": "Nuts", "done": false },
+              { "id": "starter-item-almonds", "name": "Almonds", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-beverages",
+            "name": "Beverages",
+            "items": [
+              { "id": "starter-item-coffee", "name": "Coffee", "done": false },
+              { "id": "starter-item-tea", "name": "Tea", "done": false },
+              { "id": "starter-item-water", "name": "Water", "done": false },
+              { "id": "starter-item-juice", "name": "Juice", "done": false },
+              { "id": "starter-item-soda", "name": "Soda", "done": false },
+              { "id": "starter-item-sports-drink", "name": "Sports Drink", "done": false },
+              { "id": "starter-item-beer", "name": "Beer", "done": false },
+              { "id": "starter-item-wine", "name": "Wine", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-frozen",
+            "name": "Frozen",
+            "items": [
+              { "id": "starter-item-frozen-veg", "name": "Frozen Vegetables", "done": false },
+              { "id": "starter-item-frozen-berries", "name": "Frozen Berries", "done": false },
+              { "id": "starter-item-ice-cream", "name": "Ice Cream", "done": false },
+              { "id": "starter-item-frozen-pizza", "name": "Frozen Pizza", "done": false },
+              { "id": "starter-item-frozen-dumplings", "name": "Dumplings", "done": false },
+              { "id": "starter-item-frozen-waffles", "name": "Waffles", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-snacks",
+            "name": "Snacks",
+            "items": [
+              { "id": "starter-item-chips", "name": "Chips", "done": false },
+              { "id": "starter-item-crackers", "name": "Crackers", "done": false },
+              { "id": "starter-item-popcorn", "name": "Popcorn", "done": false },
+              { "id": "starter-item-graham", "name": "Graham Crackers", "done": false },
+              { "id": "starter-item-candy", "name": "Candy", "done": false },
+              { "id": "starter-item-pretzels", "name": "Pretzels", "done": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "starter-store-hardware",
+        "name": "Hardware",
+        "categories": [
+          {
+            "id": "starter-cat-tools",
+            "name": "Tools",
+            "items": [
+              { "id": "starter-item-hammer", "name": "Hammer", "done": false },
+              { "id": "starter-item-screwdriver", "name": "Screwdriver", "done": false },
+              { "id": "starter-item-wrench", "name": "Wrench", "done": false },
+              { "id": "starter-item-drill", "name": "Drill", "done": false },
+              { "id": "starter-item-tape-measure", "name": "Tape Measure", "done": false },
+              { "id": "starter-item-level", "name": "Level", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-fasteners",
+            "name": "Fasteners",
+            "items": [
+              { "id": "starter-item-screws", "name": "Screws", "done": false },
+              { "id": "starter-item-nails", "name": "Nails", "done": false },
+              { "id": "starter-item-anchors", "name": "Wall Anchors", "done": false },
+              { "id": "starter-item-dowels", "name": "Dowels", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-electrical",
+            "name": "Electrical",
+            "items": [
+              { "id": "starter-item-batteries-aa", "name": "AA Batteries", "done": false },
+              { "id": "starter-item-batteries-aaa", "name": "AAA Batteries", "done": false },
+              { "id": "starter-item-led-bulb", "name": "LED Bulb", "done": false },
+              { "id": "starter-item-electrical-tape", "name": "Electrical Tape", "done": false },
+              { "id": "starter-item-outlet", "name": "Outlet Cover", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-plumbing",
+            "name": "Plumbing",
+            "items": [
+              { "id": "starter-item-plumber-tape", "name": "Plumber's Tape", "done": false },
+              { "id": "starter-item-pliers", "name": "Pliers", "done": false },
+              { "id": "starter-item-pipe-cement", "name": "Pipe Cement", "done": false },
+              { "id": "starter-item-caulk", "name": "Caulk", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-paint",
+            "name": "Paint",
+            "items": [
+              { "id": "starter-item-white-paint", "name": "White Paint", "done": false },
+              { "id": "starter-item-brush", "name": "Paint Brush", "done": false },
+              { "id": "starter-item-roller", "name": "Paint Roller", "done": false },
+              { "id": "starter-item-drop-cloth", "name": "Drop Cloth", "done": false },
+              { "id": "starter-item-primer", "name": "Primer", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-garden",
+            "name": "Garden",
+            "items": [
+              { "id": "starter-item-soil", "name": "Potting Soil", "done": false },
+              { "id": "starter-item-seeds", "name": "Seeds", "done": false },
+              { "id": "starter-item-fertilizer", "name": "Fertilizer", "done": false },
+              { "id": "starter-item-garden-gloves", "name": "Garden Gloves", "done": false },
+              { "id": "starter-item-hose", "name": "Garden Hose", "done": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "starter-store-office",
+        "name": "Office",
+        "categories": [
+          {
+            "id": "starter-cat-paper",
+            "name": "Paper",
+            "items": [
+              { "id": "starter-item-copy-paper", "name": "Copy Paper", "done": false },
+              { "id": "starter-item-notebook", "name": "Notebook", "done": false },
+              { "id": "starter-item-sticky-notes", "name": "Sticky Notes", "done": false },
+              { "id": "starter-item-envelopes", "name": "Envelopes", "done": false },
+              { "id": "starter-item-printer-paper", "name": "Printer Paper", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-writes",
+            "name": "Pens & Pencils",
+            "items": [
+              { "id": "starter-item-pens", "name": "Ballpoint Pens", "done": false },
+              { "id": "starter-item-gel-pens", "name": "Gel Pens", "done": false },
+              { "id": "starter-item-pencil", "name": "Pencils", "done": false },
+              { "id": "starter-item-highlighter", "name": "Highlighters", "done": false },
+              { "id": "starter-item-markers", "name": "Markers", "done": false },
+              { "id": "starter-item-eraser", "name": "Erasers", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-supplies",
+            "name": "Supplies",
+            "items": [
+              { "id": "starter-item-stapler", "name": "Stapler", "done": false },
+              { "id": "starter-item-staples", "name": "Staples", "done": false },
+              { "id": "starter-item-tape", "name": "Tape", "done": false },
+              { "id": "starter-item-scissors", "name": "Scissors", "done": false },
+              { "id": "starter-item-folder", "name": "File Folders", "done": false },
+              { "id": "starter-item-paperclips", "name": "Paper Clips", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-tech",
+            "name": "Tech",
+            "items": [
+              { "id": "starter-item-usb", "name": "USB Drive", "done": false },
+              { "id": "starter-item-printer-ink", "name": "Printer Ink", "done": false },
+              { "id": "starter-item-charger", "name": "Charger Cable", "done": false },
+              { "id": "starter-item-mouse", "name": "Mouse", "done": false },
+              { "id": "starter-item-keyboard", "name": "Keyboard", "done": false }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "starter-store-pet",
+        "name": "Pet",
+        "categories": [
+          {
+            "id": "starter-cat-dog-food",
+            "name": "Dog Food",
+            "items": [
+              { "id": "starter-item-dog-kibble", "name": "Dog Kibble", "done": false },
+              { "id": "starter-item-dog-wet", "name": "Dog Wet Food", "done": false },
+              { "id": "starter-item-dog-treats", "name": "Dog Treats", "done": false },
+              { "id": "starter-item-dog-bone", "name": "Dog Bone", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-cat-food",
+            "name": "Cat Food",
+            "items": [
+              { "id": "starter-item-cat-kibble", "name": "Cat Kibble", "done": false },
+              { "id": "starter-item-cat-wet", "name": "Cat Wet Food", "done": false },
+              { "id": "starter-item-cat-litter", "name": "Cat Litter", "done": false },
+              { "id": "starter-item-cat-treats", "name": "Cat Treats", "done": false }
+            ]
+          },
+          {
+            "id": "starter-cat-pet-supplies",
+            "name": "Supplies",
+            "items": [
+              { "id": "starter-item-leash", "name": "Leash", "done": false },
+              { "id": "starter-item-collar", "name": "Collar", "done": false },
+              { "id": "starter-item-food-bowl", "name": "Food Bowl", "done": false },
+              { "id": "starter-item-toys", "name": "Toys", "done": false },
+              { "id": "starter-item-shampoo", "name": "Pet Shampoo", "done": false }
+            ]
+          }
+        ]
+      }
+    ],
+    "activeStore": 0,
+    "openCats": {},
+    "tab": "list"
+  }
+}

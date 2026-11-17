@@ -18,6 +18,7 @@ Shopping list — Whole Foods:
 ## ✨ Features
 
 - **Organized by store and category** — keep separate lists per shop (Grocery, Pharmacy, …), each with its own categories (Produce, Dairy, …).
+- **Comprehensive starter data** — ships with **4 stores**, **22 categories**, and **195 items** covering grocery staples, hardware, office supplies, and pet care.
 - **Two views**
   - **Items** — your stores, categories, and items. Checking an item *selects* it for your list.
   - **My List** — the items you've selected, split into **To buy** and **Purchased**. Checking here marks something bought.
@@ -65,6 +66,8 @@ Everything in this section is what you need to use Shoplist on your own phone.
 - **SMS** — one tap opens your carrier's messaging app with your to-buy items pre-filled (or copy to clipboard).
 - **Search** — filter items within the current store.
 - **Clear** — in the **Purchased** group, clears only the purchased items, leaving your *To buy* list intact.
+
+> 💡 **Updated your app?** Newer versions of Shoplist ship with more stores and items (Grocery, Hardware, Office, Pet). If you already have the app installed, the new data only appears for *new* stores you create — to pick up the full updated catalog, **Import** the `starter.json` file from this repo (see [Backups](#-backups)). Your existing items are preserved; the import adds the new stores and categories.
 
 <table>
   <tr>
@@ -166,6 +169,7 @@ Every row (store, category, item) has a **⋮** menu that opens a bottom sheet �
 Shoplist/
 ├── index.html        # the app (all-in-one)
 ├── manifest.json     # PWA manifest
+├── starter.json      # seed data (import to update your list)
 ├── sw.js             # service worker (offline cache)
 ├── icons/
 │   ├── icon.svg      # app icon (browsers)

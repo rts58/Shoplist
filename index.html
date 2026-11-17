@@ -241,21 +241,255 @@
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8));
 
   function seedData() {
-    const c1 = uid(), c2 = uid(), c3 = uid();
+    // Deterministic IDs so the seed is stable across installs and matches
+    // starter.json (the importable sample). Users can freely edit/delete.
     return {
       stores: [
-        { id: uid(), name: "Grocery", categories: [
-          { id: c1, name: "Produce", items: [
-            { id: uid(), name: "Bananas", done: false },
-            { id: uid(), name: "Apples", done: false },
-            { id: uid(), name: "Spinach", done: true }
+        { id: "seed-store-grocery", name: "Grocery", categories: [
+          { id: "seed-cat-produce", name: "Produce", items: [
+            { id: "seed-item-bananas", name: "Bananas", done: false },
+            { id: "seed-item-apples", name: "Apples", done: false },
+            { id: "seed-item-avocado", name: "Avocado", done: false },
+            { id: "seed-item-tomatoes", name: "Tomatoes", done: false },
+            { id: "seed-item-cucumbers", name: "Cucumbers", done: false },
+            { id: "seed-item-carrots", name: "Carrots", done: false },
+            { id: "seed-item-bell-peppers", name: "Bell Peppers", done: false },
+            { id: "seed-item-onions", name: "Onions", done: false },
+            { id: "seed-item-garlic", name: "Garlic", done: false },
+            { id: "seed-item-spinach", name: "Spinach", done: true },
+            { id: "seed-item-lettuce", name: "Lettuce", done: false },
+            { id: "seed-item-cilantro", name: "Cilantro", done: false },
+            { id: "seed-item-lemon", name: "Lemons", done: false },
+            { id: "seed-item-lime", name: "Limes", done: false },
+            { id: "seed-item-oranges", name: "Oranges", done: false },
+            { id: "seed-item-grapes", name: "Grapes", done: false },
+            { id: "seed-item-berries", name: "Mixed Berries", done: false },
+            { id: "seed-item-strawberries", name: "Strawberries", done: false }
           ]},
-          { id: c2, name: "Dairy", items: [
-            { id: uid(), name: "Milk", done: false },
-            { id: uid(), name: "Eggs", done: false }
+          { id: "seed-cat-dairy", name: "Dairy", items: [
+            { id: "seed-item-milk", name: "Milk", done: false },
+            { id: "seed-item-whole-milk", name: "Whole Milk", done: false },
+            { id: "seed-item-oat-milk", name: "Oat Milk", done: false },
+            { id: "seed-item-eggs", name: "Eggs", done: false },
+            { id: "seed-item-butter", name: "Butter", done: false },
+            { id: "seed-item-cream", name: "Heavy Cream", done: false },
+            { id: "seed-item-cheddar", name: "Cheddar Cheese", done: false },
+            { id: "seed-item-mozzarella", name: "Mozzarella", done: false },
+            { id: "seed-item-parmesan", name: "Parmesan", done: false },
+            { id: "seed-item-yogurt", name: "Greek Yogurt", done: false },
+            { id: "seed-item-cottage", name: "Cottage Cheese", done: false }
           ]},
-          { id: c3, name: "Bakery", items: [
-            { id: uid(), name: "Sourdough", done: false }
+          { id: "seed-cat-bakery", name: "Bakery", items: [
+            { id: "seed-item-sourdough", name: "Sourdough", done: false },
+            { id: "seed-item-bagels", name: "Bagels", done: false },
+            { id: "seed-item-baguettes", name: "Baguettes", done: false },
+            { id: "seed-item-tortillas", name: "Tortillas", done: false },
+            { id: "seed-item-pita", name: "Pita Bread", done: false },
+            { id: "seed-item-buns", name: "Burger Buns", done: false },
+            { id: "seed-item-rolls", name: "Dinner Rolls", done: false },
+            { id: "seed-item-croissants", name: "Croissants", done: false },
+            { id: "seed-item-cookies", name: "Chocolate Chip Cookies", done: false },
+            { id: "seed-item-cake", name: "Cake", done: false }
+          ]},
+          { id: "seed-cat-meat", name: "Meat & Seafood", items: [
+            { id: "seed-item-chicken-breast", name: "Chicken Breast", done: false },
+            { id: "seed-item-chicken-thighs", name: "Chicken Thighs", done: false },
+            { id: "seed-item-ground-beef", name: "Ground Beef", done: false },
+            { id: "seed-item-pork-chop", name: "Pork Chops", done: false },
+            { id: "seed-item-salmon", name: "Salmon Fillets", done: false },
+            { id: "seed-item-shrimp", name: "Shrimp", done: false },
+            { id: "seed-item-bacon", name: "Bacon", done: false },
+            { id: "seed-item-sausage", name: "Italian Sausage", done: false },
+            { id: "seed-item-turkey", name: "Turkey", done: false },
+            { id: "seed-item-tofu", name: "Tofu", done: false },
+            { id: "seed-item-tempeh", name: "Tempeh", done: false }
+          ]},
+          { id: "seed-cat-frozen", name: "Frozen", items: [
+            { id: "seed-item-frozen-peas", name: "Frozen Peas", done: false },
+            { id: "seed-item-frozen-berries", name: "Frozen Berries", done: false },
+            { id: "seed-item-ice-cream", name: "Ice Cream", done: false },
+            { id: "seed-item-frozen-waffles", name: "Frozen Waffles", done: false },
+            { id: "seed-item-frozen-pizza", name: "Frozen Pizza", done: false },
+            { id: "seed-item-frozen-chicken", name: "Frozen Chicken Tenders", done: false },
+            { id: "seed-item-frozen-vegetables", name: "Frozen Mixed Vegetables", done: false },
+            { id: "seed-item-frozen-dumplings", name: "Frozen Dumplings", done: false }
+          ]},
+          { id: "seed-cat-canned", name: "Canned & Jarred", items: [
+            { id: "seed-item-black-beans", name: "Black Beans", done: false },
+            { id: "seed-item-chickpeas", name: "Chickpeas", done: false },
+            { id: "seed-item-canned-tomatoes", name: "Canned Tomatoes", done: false },
+            { id: "seed-item-tomato-sauce", name: "Tomato Sauce", done: false },
+            { id: "seed-item-tuna", name: "Tuna", done: false },
+            { id: "seed-item-canned-soup", name: "Canned Soup", done: false },
+            { id: "seed-item-olives", name: "Olives", done: false },
+            { id: "seed-item-coconut-milk", name: "Coconut Milk", done: false },
+            { id: "seed-item-pickles", name: "Pickles", done: false },
+            { id: "seed-item-peanut-butter", name: "Peanut Butter", done: false },
+            { id: "seed-item-honey", name: "Honey", done: false }
+          ]},
+          { id: "seed-cat-pantry", name: "Pantry", items: [
+            { id: "seed-item-rice", name: "Rice", done: false },
+            { id: "seed-item-pasta", name: "Pasta", done: false },
+            { id: "seed-item-flour", name: "All-Purpose Flour", done: false },
+            { id: "seed-item-sugar", name: "Sugar", done: false },
+            { id: "seed-item-brown-sugar", name: "Brown Sugar", done: false },
+            { id: "seed-item-salt", name: "Salt", done: false },
+            { id: "seed-item-pepper", name: "Black Pepper", done: false },
+            { id: "seed-item-olive-oil", name: "Olive Oil", done: false },
+            { id: "seed-item-vegetable-oil", name: "Vegetable Oil", done: false },
+            { id: "seed-item-baking-powder", name: "Baking Powder", done: false },
+            { id: "seed-item-vanilla", name: "Vanilla Extract", done: false },
+            { id: "seed-item-cocoa", name: "Cocoa Powder", done: false },
+            { id: "seed-item-soy-sauce", name: "Soy Sauce", done: false },
+            { id: "seed-item-vinegar", name: "Apple Cider Vinegar", done: false },
+            { id: "seed-item-mustard", name: "Mustard", done: false },
+            { id: "seed-item-ketchup", name: "Ketchup", done: false },
+            { id: "seed-item-mayo", name: "Mayonnaise", done: false },
+            { id: "seed-item-jam", name: "Jam", done: false },
+            { id: "seed-item-oatmeal", name: "Oatmeal", done: false },
+            { id: "seed-item-almond-butter", name: "Almond Butter", done: false }
+          ]},
+          { id: "seed-cat-beverages", name: "Beverages", items: [
+            { id: "seed-item-coffee", name: "Coffee Beans", done: false },
+            { id: "seed-item-tea", name: "Tea Bags", done: false },
+            { id: "seed-item-orange-juice", name: "Orange Juice", done: false },
+            { id: "seed-item-club-soda", name: "Club Soda", done: false },
+            { id: "seed-item-sparkling-water", name: "Sparkling Water", done: false },
+            { id: "seed-item-iced-tea", name: "Iced Tea", done: false },
+            { id: "seed-item-energy-drink", name: "Energy Drink", done: false },
+            { id: "seed-item-beer", name: "Beer", done: false },
+            { id: "seed-item-wine", name: "Wine", done: false }
+          ]},
+          { id: "seed-cat-snacks", name: "Snacks", items: [
+            { id: "seed-item-potato-chips", name: "Potato Chips", done: false },
+            { id: "seed-item-popcorn", name: "Popcorn", done: false },
+            { id: "seed-item-nuts", name: "Mixed Nuts", done: false },
+            { id: "seed-item-chocolate", name: "Dark Chocolate", done: false },
+            { id: "seed-item-rice-crisps", name: "Rice Crisps", done: false },
+            { id: "seed-item-hummus", name: "Hummus", done: false },
+            { id: "seed-item-crackers", name: "Saltine Crackers", done: false },
+            { id: "seed-item-goldfish", name: "Goldfish Crackers", done: false },
+            { id: "seed-item-pretzels", name: "Pretzels", done: false },
+            { id: "seed-item-trail-mix", name: "Trail Mix", done: false }
+          ]}
+        ]},
+        { id: "seed-store-hardware", name: "Hardware", categories: [
+          { id: "seed-cat-fasteners", name: "Fasteners", items: [
+            { id: "seed-item-nails", name: "Nails", done: false },
+            { id: "seed-item-screws", name: "Screws", done: false },
+            { id: "seed-item-anchors", name: "Wall Anchors", done: false },
+            { id: "seed-item-bolts", name: "Bolts & Nuts", done: false },
+            { id: "seed-item-washers", name: "Washers", done: false },
+            { id: "seed-item-drywall-screws", name: "Drywall Screws", done: false }
+          ]},
+          { id: "seed-cat-tools", name: "Tools", items: [
+            { id: "seed-item-hammer", name: "Hammer", done: false },
+            { id: "seed-item-screwdriver", name: "Screwdriver Set", done: false },
+            { id: "seed-item-wrench", name: "Wrench Set", done: false },
+            { id: "seed-item-tape-measure", name: "Tape Measure", done: false },
+            { id: "seed-item-level", name: "Level", done: false },
+            { id: "seed-item-pliers", name: "Pliers", done: false },
+            { id: "seed-item-drill-bits", name: "Drill Bit Set", done: false },
+            { id: "seed-item-clamp", name: "Clamps", done: false }
+          ]},
+          { id: "seed-cat-paint", name: "Paint & Finishing", items: [
+            { id: "seed-item-paint", name: "Interior Paint", done: false },
+            { id: "seed-item-primer", name: "Primer", done: false },
+            { id: "seed-item-brush", name: "Paintbrush", done: false },
+            { id: "seed-item-roller", name: "Roller & Cover", done: false },
+            { id: "seed-item-tape", name: "Painter's Tape", done: false },
+            { id: "seed-item-sandpaper", name: "Sandpaper", done: false },
+            { id: "seed-item-thinners", name: "Paint Thinner", done: false }
+          ]},
+          { id: "seed-cat-electrical", name: "Electrical", items: [
+            { id: "seed-item-batteries-aa", name: "AA Batteries", done: false },
+            { id: "seed-item-batteries-aaa", name: "AAA Batteries", done: false },
+            { id: "seed-item-batteries-9v", name: "9V Batteries", done: false },
+            { id: "seed-item-light-bulbs", name: "LED Light Bulbs", done: false },
+            { id: "seed-item-extension-cord", name: "Extension Cord", done: false },
+            { id: "seed-item-outlet-plate", name: "Outlet Cover Plate", done: false },
+            { id: "seed-item-gfcis", name: "GFCI Outlets", done: false }
+          ]},
+          { id: "seed-cat-plumbing", name: "Plumbing", items: [
+            { id: "seed-item-tape-plumber", name: "Plumber's Tape", done: false },
+            { id: "seed-item-tubing", name: "Tubing", done: false },
+            { id: "seed-item-faucet-washer", name: "Faucet Washers", done: false },
+            { id: "seed-item-drip-tray", name: "Faucet Drip Tray", done: false },
+            { id: "seed-item-drain-cleaner", name: "Drain Cleaner", done: false }
+          ]},
+          { id: "seed-cat-household", name: "Household", items: [
+            { id: "seed-item-trash-bags", name: "Trash Bags", done: false },
+            { id: "seed-item-garbage-liner", name: "Garbage Can Liners", done: false },
+            { id: "seed-item-broom", name: "Broom", done: false },
+            { id: "seed-item-dustpan", name: "Dustpan", done: false },
+            { id: "seed-item-mop", name: "Mop", done: false },
+            { id: "seed-item-sponge", name: "Sponges", done: false },
+            { id: "seed-item-gloves", name: "Rubber Gloves", done: false },
+            { id: "seed-item-air-freshener", name: "Air Freshener", done: false }
+          ]}
+        ]},
+        { id: "seed-store-office", name: "Office", categories: [
+          { id: "seed-cat-paper", name: "Paper & Printing", items: [
+            { id: "seed-item-printer-paper", name: "Printer Paper", done: false },
+            { id: "seed-item-legal-pad", name: "Legal Pads", done: false },
+            { id: "seed-item-sticky-notes", name: "Sticky Notes", done: false },
+            { id: "seed-item-index-cards", name: "Index Cards", done: false },
+            { id: "seed-item-manila-folders", name: "Manila Folders", done: false },
+            { id: "seed-item-ink-cartridge", name: "Ink Cartridge", done: false },
+            { id: "seed-item-toner", name: "Toner Cartridge", done: false }
+          ]},
+          { id: "seed-cat-writing", name: "Writing", items: [
+            { id: "seed-item-pens-black", name: "Black Pens", done: false },
+            { id: "seed-item-pens-blue", name: "Blue Pens", done: false },
+            { id: "seed-item-pens-red", name: "Red Pens", done: false },
+            { id: "seed-item-pencils", name: "Pencils", done: false },
+            { id: "seed-item-highlighters", name: "Highlighters", done: false },
+            { id: "seed-item-markers", name: "Whiteboard Markers", done: false },
+            { id: "seed-item-erasers", name: "Erasers", done: false }
+          ]},
+          { id: "seed-cat-office-supplies", name: "Supplies", items: [
+            { id: "seed-item-stapler", name: "Stapler", done: false },
+            { id: "seed-item-staples", name: "Staples", done: false },
+            { id: "seed-item-pins", name: "Push Pins", done: false },
+            { id: "seed-item-paper-clips", name: "Paper Clips", done: false },
+            { id: "seed-item-scissors", name: "Scissors", done: false },
+            { id: "seed-item-box-cutter", name: "Box Cutter", done: false },
+            { id: "seed-item-tape", name: "Clear Tape", done: false },
+            { id: "seed-item-label-maker", name: "Label Maker Tape", done: false }
+          ]},
+          { id: "seed-cat-tech", name: "Tech", items: [
+            { id: "seed-item-usb-drive", name: "USB Drive", done: false },
+            { id: "seed-item-usb-cable", name: "USB-C Cable", done: false },
+            { id: "seed-item-hdmi-cable", name: "HDMI Cable", done: false },
+            { id: "seed-item-mouse", name: "Computer Mouse", done: false },
+            { id: "seed-item-keyboard", name: "Keyboard", done: false },
+            { id: "seed-item-earbuds", name: "Earbuds", done: false },
+            { id: "seed-item-hub", name: "USB Hub", done: false }
+          ]}
+        ]},
+        { id: "seed-store-pet", name: "Pet", categories: [
+          { id: "seed-cat-pet-food", name: "Food & Treats", items: [
+            { id: "seed-item-dog-food", name: "Dog Food", done: false },
+            { id: "seed-item-cat-food", name: "Cat Food", done: false },
+            { id: "seed-item-dog-treats", name: "Dog Treats", done: false },
+            { id: "seed-item-cat-treats", name: "Cat Treats", done: false },
+            { id: "seed-item-wet-food", name: "Wet Food", done: false },
+            { id: "seed-item-puppy-food", name: "Puppy Food", done: false }
+          ]},
+          { id: "seed-cat-pet-supplies", name: "Supplies", items: [
+            { id: "seed-item-leash", name: "Leash", done: false },
+            { id: "seed-item-collar", name: "Collar", done: false },
+            { id: "seed-item-litter", name: "Cat Litter", done: false },
+            { id: "seed-item-toy", name: "Pet Toys", done: false },
+            { id: "seed-item-bed", name: "Pet Bed", done: false },
+            { id: "seed-item-food-bowl", name: "Food Bowl", done: false },
+            { id: "seed-item-grooming", name: "Grooming Supplies", done: false }
+          ]},
+          { id: "seed-cat-pet-health", name: "Health", items: [
+            { id: "seed-item-flea-meds", name: "Flea & Tick Medication", done: false },
+            { id: "seed-item-heartworm", name: "Heartworm Prevention", done: false },
+            { id: "seed-item-vitamins", name: "Pet Vitamins", done: false },
+            { id: "seed-item-dental", name: "Dental Chews", done: false }
           ]}
         ]}
       ],
