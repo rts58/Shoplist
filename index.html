@@ -539,6 +539,10 @@
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+  // Shown in the Manage stores sheet's about line. Bump when you ship a change.
+  const APP_VERSION = "1.0.0";
+  const REPO_URL = "https://github.com/rts58/Shoplist";
+
   const CHECK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
   const CHEV_SVG = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
   const PLUS_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -1174,7 +1178,8 @@
       <button class="list-send" data-mimp="1">Import</button>
     </div>`;
     openSheet("Manage stores", rows,
-      `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>`);
+      `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>
+       <p style="text-align:center;font-size:12px;color:var(--text-3);margin:12px 0 2px">Shoplist v${APP_VERSION} · <a href="${REPO_URL}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">GitHub</a></p>`);
     sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(true); openRenameStore(+b.dataset.mren); });
     sheet.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
     sheet.querySelector("[data-mexp]").onclick = exportBackup;

@@ -1,4 +1,4 @@
-const CACHE = "shoplist-v8"; // bumped: Clear now removes only Purchased items
+const CACHE = "shoplist-v9"; // bumped: added about line to Manage stores sheet
 const ASSETS = [
   "./index.html",
   "./manifest.json",
