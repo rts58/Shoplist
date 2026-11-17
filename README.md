@@ -53,7 +53,7 @@ Everything in this section is what you need to use Shoplist on your own phone.
 
 ### Install the app
 
-1. Open the app URL in your phone's browser (e.g. `https://rts58.github.io/Shoplist/`).
+1. Open the app in your phone's browser: [https://rts58.github.io/Shoplist/](https://rts58.github.io/Shoplist/).
 2. Tap your browser's **Share / Menu** button, then choose **Add to Home Screen**.
 3. Launch it from the home-screen icon — it runs full-screen and works offline.
 
@@ -200,7 +200,7 @@ Because the app is a static site, the easiest way to share it is **GitHub Pages*
 
 There's no build step — developing is just editing `index.html` and refreshing.
 
-**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the cache version at the top of `sw.js` (`const CACHE = "shoplist-v8";` → `v9`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after this version is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
+**Tip:** if the app looks stale after an edit, the service worker may be serving a cached copy. Bump the trailing digit of `APP_VERSION` in `index.html` **and** the matching `const CACHE` in `sw.js` (e.g. `1.0.9` → `1.0.10` and `shoplist-v9` → `shoplist-v10`) to force a refresh, or unregister it from devtools. On a phone that already has the app, the service worker re-fetches only after the cache is bumped — so always bump it when you change `index.html`, `manifest.json`, or `icons/`.
 
 ---
 

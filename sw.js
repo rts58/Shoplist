@@ -1,4 +1,5 @@
-const CACHE = "shoplist-v9"; // bumped: added about line to Manage stores sheet
+// Trailing digit of the app version (index.html: APP_VERSION). Bump both together.
+const CACHE = "shoplist-v9";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
