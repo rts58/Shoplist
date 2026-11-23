@@ -142,6 +142,14 @@
   .check svg { opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
   .item.on .check { background: var(--accent); border-color: var(--accent); }
   .item.on .check svg { opacity: 1; transform: scale(1); }
+  /* My List: purchased rows are visually distinct — dimmed, struck through.
+     Scoped to .list-card so the Items (Stores) screen is unaffected. */
+  .list-card .item { transition: background .15s; }
+  .list-card .item:active { background: var(--surface-2); }
+  .list-card .item .name { transition: color .15s, opacity .15s; }
+  .list-card .item .item-tag { transition: opacity .15s; }
+  .list-card .item.on { opacity: .6; }
+  .list-card .item.on .name { color: var(--text-3); }
 
   .empty { text-align: center; color: var(--text-3); padding: 48px 20px; font-size: 15px; }
   .empty .big { font-size: 40px; margin-bottom: 12px; }
@@ -605,6 +613,10 @@
     //  - Stores tab: checking "selects" it (adds it to My List).
     //  - My List tab: checking "purchases" it (moves it to Purchased).
     const on = item.done ? " on" : "";
+    // My List: a purchased item is visually distinct (dimmed + struck through).
+    // The .purchased class is purely cosmetic — the .on class (item.done) still
+    // drives the checkbox fill, and .list-card .item.on drives the dimming.
+    const purchased = item.purchased ? " purchased" : "";
     const tag = item.cat ? `<span class="item-tag">${esc(item.cat)}</span>` : "";
     // A trailing "⋯" button opens the row's Edit / Delete menu. It's shown on
     // every item row. ctx is the category object (Stores tab) or the string
@@ -613,7 +625,11 @@
     // Items sit inside a card container (.cat on the Stores tab, .list-card on
     // My List / Purchased) that provides the surface background + single shadow,
     // so each row needs no card of its own — just the hairline separators.
-    return `<div class="item${on}" data-item="${item.id}">
+    // The row itself carries data-toggle so tapping anywhere on it (not just the
+    // checkbox) toggles the item. The delegated handler's closest() finds the
+    // innermost match, so the checkbox and the ⋯ menu button keep their own
+    // behavior (toggle / open menu) and don't double-fire.
+    return `<div class="item${on}${purchased}" data-item="${item.id}" data-toggle="${item.id}">
       <button class="check" data-toggle="${item.id}" aria-label="Toggle">${CHECK_SVG}</button>
       <span class="name">${esc(item.name)}${tag}</span>
       ${menu}
