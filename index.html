@@ -148,8 +148,17 @@
   .list-card .item:active { background: var(--surface-2); }
   .list-card .item .name { transition: color .15s, opacity .15s; }
   .list-card .item .item-tag { transition: opacity .15s; }
-  .list-card .item.on { opacity: .6; }
-  .list-card .item.on .name { color: var(--text-3); }
+  /* Only purchased rows are dimmed. To Buy rows (done, not purchased) keep
+     full opacity and a normal, empty-looking checkbox. */
+  .list-card .item.purchased { opacity: .6; }
+  .list-card .item.purchased .name { color: var(--text-3); }
+  /* Every My List item is done, so the global .item.on rule would fill all
+     checkboxes green. Override in .list-card: To Buy rows get an empty box,
+     Purchased rows keep the green checked box. */
+  .list-card .item .check { background: transparent; border-color: var(--separator); }
+  .list-card .item .check svg { opacity: 0; transform: scale(.6); }
+  .list-card .item.purchased .check { background: var(--accent); border-color: var(--accent); }
+  .list-card .item.purchased .check svg { opacity: 1; transform: scale(1); }
 
   .empty { text-align: center; color: var(--text-3); padding: 48px 20px; font-size: 15px; }
   .empty .big { font-size: 40px; margin-bottom: 12px; }
@@ -614,8 +623,9 @@
     //  - My List tab: checking "purchases" it (moves it to Purchased).
     const on = item.done ? " on" : "";
     // My List: a purchased item is visually distinct (dimmed + struck through).
-    // The .purchased class is purely cosmetic — the .on class (item.done) still
-    // drives the checkbox fill, and .list-card .item.on drives the dimming.
+    // The .purchased class drives the dimming/grey/line-through. The .on class
+    // (item.done) still drives the checkbox fill — every My List item is done,
+    // so To Buy rows show a green checked box and Purchased rows the same.
     const purchased = item.purchased ? " purchased" : "";
     const tag = item.cat ? `<span class="item-tag">${esc(item.cat)}</span>` : "";
     // A trailing "⋯" button opens the row's Edit / Delete menu. It's shown on
