@@ -695,7 +695,7 @@
     seg.querySelectorAll("[data-theme-choice]").forEach((b) => b.classList.toggle("active", b.dataset.themeChoice === themeCtl.choice));
   }
 
-  // Shown in the Manage stores sheet's about line. Bump when you ship a change.
+  // Shown in the Settings sheet's about line. Bump when you ship a change.
   const APP_VERSION = "1.0.12";
   const REPO_URL = "https://github.com/rts58/Shoplist";
 
@@ -1422,7 +1422,7 @@
         <button class="btn outline" data-mexp="1">Export</button>
         <button class="btn outline" data-mimp="1">Import</button>
       </div>`;
-    openSheet("Manage stores", rows,
+    openSheet("Settings", rows,
       `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>
        <p class="sheet-footer">Shoplist v${APP_VERSION} · <a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a></p>`);
     renderStoreRows();
