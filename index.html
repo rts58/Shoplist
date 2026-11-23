@@ -151,7 +151,10 @@
   /* Only purchased rows are dimmed. To Buy rows (done, not purchased) keep
      full opacity and a normal, empty-looking checkbox. */
   .list-card .item.purchased { opacity: .6; }
-  .list-card .item.purchased .name { color: var(--text-3); }
+  /* .purchased .name has higher specificity than the later
+     .list-card .item .name { text-decoration: none } reset, so the
+     line-through wins for purchased rows. */
+  .list-card .item.purchased .name { color: var(--text-3); text-decoration: line-through; }
   /* Every My List item is done, so the global .item.on rule would fill all
      checkboxes green. Override in .list-card: To Buy rows get an empty box,
      Purchased rows keep the green checked box. */
