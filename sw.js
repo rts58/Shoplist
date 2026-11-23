@@ -1,5 +1,5 @@
 // Trailing digit of the app version (index.html: APP_VERSION). Bump both together.
-const CACHE = "shoplist-v15";
+const CACHE = "shoplist-v16";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
