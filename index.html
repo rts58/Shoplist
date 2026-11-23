@@ -316,9 +316,6 @@
   .btn.primary { background: var(--accent); color: var(--on-accent); }
   .btn.danger { background: var(--surface-2); color: var(--danger); }
   .btn.outline { background: transparent; border: 1px solid var(--separator); color: var(--text); }
-  /* Destructive actions get a visual gap from the other buttons so Delete is
-     never adjacent to Edit/Move — it wraps to its own row, 12px below. */
-  .btn.danger { margin-top: 12px; }
   /* Uppercase section headers inside a sheet (e.g. STORES / BACKUP). */
   .sheet-section { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-3); margin: 18px 0 8px; }
   .sheet-section:first-child { margin-top: 0; }
@@ -715,7 +712,7 @@
   }
 
   // Shown in the Settings sheet's about line. Bump when you ship a change.
-  const APP_VERSION = "1.0.17";
+  const APP_VERSION = "1.0.18";
   const REPO_URL = "https://github.com/rts58/Shoplist";
 
   const CHECK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
