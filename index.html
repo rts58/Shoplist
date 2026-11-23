@@ -29,15 +29,28 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="icons/icon-180.png" />
 <script>
-  // Resolve the color theme before first paint. The app follows the OS setting
-  // ("system"): read prefers-color-scheme and set data-theme on <html>, then
-  // re-apply whenever the OS setting changes. Runs in <head> so the correct
-  // theme is in place before the body renders (no light flash on dark devices).
+  // Resolve the color theme before first paint. The app's appearance choice is
+  // "system" | "light" | "dark" (see the Appearance setting in the Manage
+  // sheet). "system" follows the OS via prefers-color-scheme. Runs in <head> so
+  // the correct theme is in place before the body renders (no light flash on
+  // dark devices). The main script reuses window.__shoplistTheme for the UI.
   (function () {
     var root = document.documentElement;
+    var KEY = "shoplist.theme";
     var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    // The browser-chrome hint must be a literal color (var() is invalid in a
+    // meta tag), so we mirror the app's --bg for the resolved theme.
+    var CHROME = { light: "#f2f2f7", dark: "#000000" };
+    function readChoice() {
+      var c;
+      try { c = localStorage.getItem(KEY); } catch (e) { c = null; }
+      return (c === "light" || c === "dark" || c === "system") ? c : "system";
+    }
     function apply() {
-      root.setAttribute("data-theme", mq.matches ? "dark" : "light");
+      var resolved = readChoice() === "system" ? (mq.matches ? "dark" : "light") : readChoice();
+      root.setAttribute("data-theme", resolved);
+      if (themeColorMeta) themeColorMeta.setAttribute("content", CHROME[resolved]);
     }
     apply();
     // matchMedia change events differ by engine; guard both.
@@ -46,6 +59,19 @@
     } else if (typeof mq.addListener === "function") {
       mq.addListener(apply);
     }
+    // Expose to the main script so the Appearance setting stays in sync.
+    window.__shoplistTheme = {
+      key: KEY,
+      choice: readChoice(),
+      resolved: root.getAttribute("data-theme"),
+      apply: apply,
+      setChoice: function (c) {
+        if (c !== "light" && c !== "dark" && c !== "system") c = "system";
+        try { localStorage.setItem(KEY, c); } catch (e) {}
+        window.__shoplistTheme.choice = c;
+        apply();
+      }
+    };
   })();
 </script>
 <style>
@@ -284,6 +310,10 @@
   .sheet-footer a { color: var(--accent); text-decoration: none; }
   .sheet .field { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--separator); background: var(--surface-2); font-size: 16px; outline: none; }
   .sheet .field:focus { border-color: var(--accent); }
+  /* Segmented control (iOS-style) for the Appearance setting. */
+  .segmented { display: flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; }
+  .segmented button { flex: 1; padding: 9px 0; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); background: transparent; transition: background .15s, color .15s; }
+  .segmented button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
 
   .toast { position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + 20px + var(--safe-bottom)); transform: translateX(-50%) translateY(20px); background: var(--toast-bg); color: var(--on-accent); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; max-width: 80%; text-align: center; display: flex; align-items: center; gap: 14px; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
@@ -644,8 +674,29 @@
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+  // ---- theme (appearance) ----
+  // The head script (window.__shoplistTheme) owns the actual data-theme attribute
+  // and the theme-color meta, and re-applies on OS changes. We only read the
+  // current choice for the UI and call setChoice() when the user picks one.
+  const themeCtl = window.__shoplistTheme || { choice: "system", setChoice: () => {} };
+  const THEME_CHOICES = [
+    { id: "system", label: "System" },
+    { id: "light", label: "Light" },
+    { id: "dark", label: "Dark" }
+  ];
+  function themeSegmented() {
+    return `<div class="segmented" id="theme-seg">` +
+      THEME_CHOICES.map((c) => `<button data-theme-choice="${c.id}" class="${c.id === themeCtl.choice ? "active" : ""}">${c.label}</button>`).join("") +
+      `</div>`;
+  }
+  function updateThemeSegmented() {
+    const seg = sheet.querySelector("#theme-seg");
+    if (!seg) return;
+    seg.querySelectorAll("[data-theme-choice]").forEach((b) => b.classList.toggle("active", b.dataset.themeChoice === themeCtl.choice));
+  }
+
   // Shown in the Manage stores sheet's about line. Bump when you ship a change.
-  const APP_VERSION = "1.0.11";
+  const APP_VERSION = "1.0.12";
   const REPO_URL = "https://github.com/rts58/Shoplist";
 
   const CHECK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
@@ -1365,6 +1416,7 @@
     // The store rows live in #store-rows so renderStoreRows() can refresh them
     // in place after a reorder without rebuilding (and re-animating) the sheet.
     let rows = `<div class="sheet-section">Stores</div><div id="store-rows"></div>`;
+    rows += `<div class="sheet-section">Appearance</div>${themeSegmented()}`;
     rows += `<div class="sheet-section">Backup</div>
       <div class="sheet-actions" style="margin-top:0">
         <button class="btn outline" data-mexp="1">Export</button>
@@ -1377,6 +1429,10 @@
     sheet.querySelector("[data-mexp]").onclick = exportBackup;
     sheet.querySelector("[data-mimp]").onclick = () => importFile.click();
     sheet.querySelector('[data-act="done"]').onclick = closeSheet;
+    // Appearance: pick a choice, persist it, and refresh the segmented control.
+    sheet.querySelectorAll("[data-theme-choice]").forEach((b) => {
+      b.onclick = () => { themeCtl.setChoice(b.dataset.themeChoice); updateThemeSegmented(); };
+    });
   }
 
   // ---- backup: export / import ----
