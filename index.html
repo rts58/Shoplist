@@ -148,6 +148,10 @@
 
   .list-group { margin-bottom: 20px; }
   .list-group-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 10px; }
+  .list-group-head.center { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .list-group-head.center .list-group-title { justify-self: start; }
+  .list-group-head.center .list-send { justify-self: center; }
+  .list-group-head.center .list-share { justify-self: end; }
   .list-group-title { font-size: 15px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .6px; }
   .list-send { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent); }
   .list-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
@@ -155,9 +159,8 @@
   .list-card .item:first-child { border-top: none; }
   .list-card .item .name { text-decoration: none; color: var(--text); }
 
-  .send-all { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 16px; padding: 14px; border-radius: 14px; background: var(--accent); color: #fff; font-size: 16px; font-weight: 700; box-shadow: var(--shadow-md); transition: background .15s, transform .08s; }
-  .send-all:active { background: var(--accent-press); transform: scale(.98); }
-  .send-all:disabled { background: var(--separator); color: var(--text-3); box-shadow: none; }
+  .list-share { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: none; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; box-shadow: var(--shadow-sm); transition: background .15s, transform .08s; }
+  .list-share:active { background: var(--accent-press); transform: scale(.94); }
 
 
 
@@ -743,13 +746,10 @@
       contentEl.innerHTML = `<div class="empty"><div class="big">🧾</div>Your list is empty.<br>Select items in the ${esc(state.stores[state.activeStore]?.name || "active")} store to add them here.</div>`;
       return;
     }
-    let html = `<button class="send-all" data-sendall="1">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg>
-      Text list via SMS
-    </button>`;
+    let html = "";
     if (toBuy.length) {
       html += `<div class="list-group">
-        <div class="list-group-head"><span class="list-group-title">To buy</span><span class="list-send">${toBuy.length} item${toBuy.length > 1 ? "s" : ""}</span></div>
+        <div class="list-group-head center"><span class="list-group-title">To buy</span><span class="list-send">${toBuy.length} item${toBuy.length > 1 ? "s" : ""}</span><button class="list-share" data-sendall="1" aria-label="Text list via SMS"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button></div>
         <div class="list-card">${toBuy.map((i) => itemRow(i, "list")).join("") || ""}</div>
       </div>`;
     }
