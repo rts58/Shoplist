@@ -40,6 +40,7 @@
     --accent: #34c759;
     --accent-press: #2bb04c;
     --accent-soft: #e7f8ec;
+    --on-list: #007aff;
     --danger: #ff3b30;
     --shadow-sm: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.05);
     --shadow-md: 0 4px 14px rgba(0,0,0,.08);
@@ -142,6 +143,11 @@
   .check svg { opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
   .item.on .check { background: var(--accent); border-color: var(--accent); }
   .item.on .check svg { opacity: 1; transform: scale(1); }
+  /* Items screen: an item that's on My List (done) shows a filled BLUE box and
+     normal, non-struck-through text. Scoped to .cat so the My List screen
+     (.list-card) keeps its own green/dimmed styling. */
+  .cat .item.on .check { background: var(--on-list); border-color: var(--on-list); }
+  .cat .item.on .name { color: var(--text); text-decoration: none; }
   /* My List: purchased rows are visually distinct — dimmed, struck through.
      Scoped to .list-card so the Items (Stores) screen is unaffected. */
   .list-card .item { transition: background .15s; }
