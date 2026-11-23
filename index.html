@@ -180,6 +180,12 @@
   .list-group-head.center .list-share { justify-self: end; }
   .list-group-title { font-size: 15px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .6px; }
   .list-send { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent); }
+  /* Up/down reorder arrows on a store row in the Manage sheet. The two arrows
+     sit side by side to the left of the store name. */
+  .store-move { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 2px; }
+  .store-move button { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-2); background: transparent; transition: background .15s; }
+  .store-move button:active { background: var(--surface-2); }
+  .store-move button:disabled { opacity: .3; }
   .list-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
   .list-card .item { border-top: 1px solid var(--separator); }
   .list-card .item:first-child { border-top: none; }
@@ -582,7 +588,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // Shown in the Manage stores sheet's about line. Bump when you ship a change.
-  const APP_VERSION = "1.0.9";
+  const APP_VERSION = "1.0.10";
   const REPO_URL = "https://github.com/rts58/Shoplist";
 
   const CHECK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
@@ -591,6 +597,13 @@
   const DOTS_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>';
   const MANAGE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
   // ---- helpers ----
+  // Inline SVG for a named SF Symbol (mirrors the native app's Image(systemName:)).
+  // Fills with currentColor so it inherits the button's text color.
+  const ICONS = {
+    "arrowshape.up": '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5 4.5 12h4.2v8.5h6.6V12h4.2z"/></svg>',
+    "arrowshape.down": '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5 4.5 12h4.2V3.5h6.6V12h4.2z"/></svg>'
+  };
+  const icon = (name) => ICONS[name] || "";
   let toastTimer = null;
   // Reusable toast. `action` is optional: { label, fn } renders a tappable
   // button (e.g. Undo) that runs fn and dismisses the toast. Auto-dismisses
@@ -971,6 +984,21 @@
     render();
   }
 
+  function moveStore(i, dir) {
+    // Reorder the stores array (the single source of truth for store order).
+    // The backup is the whole state blob, so the reordered array is exactly
+    // what export/import round-trips — no separate order field needed.
+    const j = i + dir; // dir is -1 (up) or 1 (down)
+    if (j < 0 || j >= state.stores.length) return; // already at the edge
+    const stores = state.stores;
+    [stores[i], stores[j]] = [stores[j], stores[i]];
+    // Re-render the store rows in place (no sheet teardown/re-animation, which
+    // would jarringly replay the slide-up). render() also re-renders the header
+    // pills and calls save(), so the new order persists and the backup matches.
+    renderStoreRows();
+    render();
+  }
+
   function addStore(name) {
     state.stores.push({ id: uid(), name, categories: [] });
     state.activeStore = state.stores.length - 1;
@@ -1249,16 +1277,37 @@
     sheet.querySelector('[data-act="cancel"]').onclick = closeSheet;
   }
 
-  function openManageStores() {
-    // Two labelled sections: the store list (STORES) and the backup actions
-    // (BACKUP). Export/Import are normal outlined buttons, not text links.
-    let rows = `<div class="sheet-section">Stores</div>`;
-    rows += state.stores.map((s, i) =>
-      `<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--separator)">
+  // Renders the store rows (name + up/down reorder arrows + Rename/Delete) into
+  // the Manage sheet's #store-rows container. Called on open and again after
+  // each reorder so the rows (and their disabled states) refresh in place.
+  function renderStoreRows() {
+    const box = sheet.querySelector("#store-rows");
+    if (!box) return;
+    box.innerHTML = state.stores.map((s, i) => {
+      const up = i > 0 ? "" : "disabled";
+      const down = i < state.stores.length - 1 ? "" : "disabled";
+      return `<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--separator)">
+        <span class="store-move">
+          <button data-mup="${i}" ${up} aria-label="Move ${esc(s.name)} up">${icon("arrowshape.up")}</button>
+          <button data-mdn="${i}" ${down} aria-label="Move ${esc(s.name)} down">${icon("arrowshape.down")}</button>
+        </span>
         <span style="flex:1;font-weight:600">${esc(s.name)}</span>
         <button class="list-send" data-mren="${i}">Rename</button>
         <button class="list-send" style="color:var(--danger)" data-mdel="${i}">Delete</button>
-      </div>`).join("");
+      </div>`;
+    }).join("");
+    box.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(true); openRenameStore(+b.dataset.mren); });
+    box.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
+    box.querySelectorAll("[data-mup]").forEach((b) => b.onclick = () => moveStore(+b.dataset.mup, -1));
+    box.querySelectorAll("[data-mdn]").forEach((b) => b.onclick = () => moveStore(+b.dataset.mdn, 1));
+  }
+
+  function openManageStores() {
+    // Two labelled sections: the store list (STORES) and the backup actions
+    // (BACKUP). Export/Import are normal outlined buttons, not text links.
+    // The store rows live in #store-rows so renderStoreRows() can refresh them
+    // in place after a reorder without rebuilding (and re-animating) the sheet.
+    let rows = `<div class="sheet-section">Stores</div><div id="store-rows"></div>`;
     rows += `<div class="sheet-section">Backup</div>
       <div class="sheet-actions" style="margin-top:0">
         <button class="btn outline" data-mexp="1">Export</button>
@@ -1267,8 +1316,7 @@
     openSheet("Manage stores", rows,
       `<div class="sheet-actions"><button class="btn primary" data-act="done">Done</button></div>
        <p class="sheet-footer">Shoplist v${APP_VERSION} · <a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a></p>`);
-    sheet.querySelectorAll("[data-mren]").forEach((b) => b.onclick = () => { closeSheet(true); openRenameStore(+b.dataset.mren); });
-    sheet.querySelectorAll("[data-mdel]").forEach((b) => b.onclick = () => { closeSheet(); openDeleteStore(+b.dataset.mdel); });
+    renderStoreRows();
     sheet.querySelector("[data-mexp]").onclick = exportBackup;
     sheet.querySelector("[data-mimp]").onclick = () => importFile.click();
     sheet.querySelector('[data-act="done"]').onclick = closeSheet;
@@ -1353,9 +1401,55 @@
       return rows.join("\n");
     }).join("\n");
     const storeName = state.stores[state.activeStore]?.name || "";
-    const msg = `Shopping list — ${storeName}:\n` + lines;
+    // The list body only — the share sheet's `title` supplies the header, so
+    // we don't repeat it in the text (which would show the title twice).
+    const msg = lines;
+    // Prefer the native share sheet when available; otherwise (or if the call
+    // fails for any reason other than the user cancelling) fall back to the
+    // SMS/Copy sheet. The message text is identical in both paths.
+    if (navigator.share) {
+      shareList({ title: `Shopping list - ${storeName}`, text: msg }, pending.length);
+    } else {
+      openSMSSheet(msg, pending.length);
+    }
+  }
+
+  // Opens the native share sheet, attaching the cart card image when the
+  // platform supports it (so the OS shows our icon instead of the default
+  // text-file glyph). Any failure other than the user dismissing the sheet
+  // falls back to the SMS/Copy sheet.
+  function shareList(data, count) {
+    loadShareImage()
+      .then((file) => {
+        if (file && navigator.canShare && navigator.canShare({ ...data, files: [file] })) {
+          data.files = [file];
+        }
+        return navigator.share(data);
+      })
+      .catch((err) => {
+        if (err && err.name === "AbortError") return; // user dismissed it
+        openSMSSheet(data.text, count);
+      });
+  }
+
+  // The cart card shown in the share sheet (icons/share-card.png). Cached so
+  // the fetch happens once per session; resolves to null if it can't load.
+  let shareFilePromise = null;
+  function loadShareImage() {
+    if (!shareFilePromise) {
+      shareFilePromise = fetch("icons/share-card.png")
+        .then((r) => (r.ok ? r.blob() : null))
+        .then((b) => (b ? new File([b], "shopping-list.png", { type: b.type || "image/png" }) : null))
+        .catch(() => null);
+    }
+    return shareFilePromise;
+  }
+
+  // The SMS/Copy fallback sheet: shows the list in a textarea with Copy and
+  // Send (opens the carrier's messaging app) actions.
+  function openSMSSheet(msg, count) {
     openSheet("Text list via SMS",
-      `<p style="text-align:center;color:var(--text-2);font-size:13px;margin-bottom:10px">${pending.length} item${pending.length > 1 ? "s" : ""} · tap to send via your carrier</p>
+      `<p style="text-align:center;color:var(--text-2);font-size:13px;margin-bottom:10px">${count} item${count > 1 ? "s" : ""} · tap to send via your carrier</p>
        <textarea class="field" id="f" rows="6" readonly>${esc(msg)}</textarea>`,
       `<div class="sheet-actions"><button class="btn" data-act="copy">Copy</button><button class="btn primary" data-act="send">Send</button></div>`);
     const enc = encodeURIComponent(msg);
