@@ -22,7 +22,7 @@ Shopping list — Whole Foods:
 - **Two views**
   - **Items** — your stores, categories, and items. Checking an item *selects* it for your list.
   - **My List** — the items you've selected, split into **To buy** and **Purchased**. Checking here marks something bought.
-- **Share the list** — one tap opens your phone's native share sheet with your to-buy items (and a cart card image), or falls back to an SMS / copy sheet.
+- **Share the list** — one tap opens your phone's native share sheet with your to-buy items as text, or falls back to an SMS / copy sheet.
 - **Search** — filter items within a store.
 - **Full CRUD** — add / rename / delete stores, categories, and items, with bottom-sheet dialogs.
 - **Reorder** — move stores and categories up/down from their option sheets.
@@ -169,7 +169,7 @@ The service worker uses a network-first strategy for the page (so you always get
   <img src="images/appearance.png" alt="Settings sheet in dark mode, with the System / Light / Dark appearance control" width="260" />
 </p>
 
-**Sharing.** The share button in the **To buy** header builds a plain-text list and prefers the native `navigator.share()` sheet (attaching a cart card image when the phone supports file sharing), falling back to an SMS / copy sheet otherwise.
+**Sharing.** The share button in the **To buy** header builds a plain-text list (with a `Shopping list — Store:` header) and prefers the native `navigator.share()` sheet, falling back to an SMS / copy sheet otherwise. It shares text only — no image — so the header stays visible in the sheet.
 
 Every row (store, category, item) has a **⋮** menu that opens a bottom sheet — e.g. the *Category options* sheet for a category lets you move it up/down, rename, or delete it.
 
@@ -190,7 +190,7 @@ Shoplist/
 │   ├── icon.svg      # app icon (browsers)
 │   ├── icon-180.png  # home-screen icon (iOS apple-touch-icon)
 │   ├── icon-512.png  # manifest / maskable icon
-│   └── share-card.png # cart card image attached to the native share sheet
+│   └── share-card.png # (unused) cart card image — share is text-only
 ├── images/           # README screenshots
 │   ├── my-list.png
 │   ├── my-list-dark.png

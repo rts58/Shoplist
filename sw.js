@@ -1,12 +1,11 @@
 // Trailing digit of the app version (index.html: APP_VERSION). Bump both together.
-const CACHE = "shoplist-v21";
+const CACHE = "shoplist-v22";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
   "./icons/icon-180.png",
   "./icons/icon-512.png",
-  "./icons/icon.svg",
-  "./icons/share-card.png"
+  "./icons/icon.svg"
 ];
 
 self.addEventListener("install", (e) => {
