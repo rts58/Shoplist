@@ -71,7 +71,7 @@ Everything in this section is what you need to use Shoplist on your own phone.
 - **Clear** — in the **Purchased** group, clears only the purchased items, leaving your *To buy* list intact.
 - **Settings** — the gear icon opens the **Settings** sheet: reorder / rename / delete stores, pick an **Appearance** (System / Light / Dark), and **Export** / **Import** backups.
 
-> 💡 **Updated your app?** Newer versions of Shoplist ship with more stores and items (Grocery, Hardware, Office, Pet). If you already have the app installed, the new data only appears for *new* stores you create — to pick up the full updated catalog, **Import** the `starter.json` file from this repo (see [Backups](#-backups)). Your existing items are preserved; the import adds the new stores and categories.
+> 💡 **Updated your app?** Newer versions of Shoplist ship with more stores and items (Grocery, Hardware, Office, Pet). If you already have the app installed, the new data only appears for *new* stores you create — to pick up the full updated catalog, **Import** the `starter.json` file from this repo (see [Backups](#-backups)). ⚠️ **Import replaces your entire current list** — it does not merge — so **Export a backup first** if you want to keep your existing items.
 
 <table>
   <tr>
