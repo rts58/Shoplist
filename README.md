@@ -22,9 +22,11 @@ Shopping list — Whole Foods:
 - **Two views**
   - **Items** — your stores, categories, and items. Checking an item *selects* it for your list.
   - **My List** — the items you've selected, split into **To buy** and **Purchased**. Checking here marks something bought.
-- **Text the list via SMS** — one tap opens your carrier's messaging app with your to-buy items pre-filled (or copy to clipboard).
+- **Share the list** — one tap opens your phone's native share sheet with your to-buy items (and a cart card image), or falls back to an SMS / copy sheet.
 - **Search** — filter items within a store.
 - **Full CRUD** — add / rename / delete stores, categories, and items, with bottom-sheet dialogs.
+- **Reorder** — move stores and categories up/down from their option sheets.
+- **Appearance** — follow your system, or force Light or Dark (the app matches the iOS system palette in dark mode).
 - **Works offline** — a service worker caches the app, so it loads and runs with no connection.
 - **Installs like an app** — use your browser's *Add to Home Screen* to get a full-screen, icon-bearing app.
 - **100% local** — no server, no tracking, no sign-up. Your data never leaves your phone.
@@ -34,10 +36,10 @@ Shopping list — Whole Foods:
 
 ## 📸 Here's what it looks like
 
-The **My List** view — your selected items, split into **To buy** and **Purchased**, with one tap to text the list.
+The **My List** view — your selected items, split into **To buy** and **Purchased**, with one tap to share the list.
 
 <p align="center">
-  <img src="images/my-list.png" alt="My List view — to-buy and purchased items with a 'Text list via SMS' button" width="260" />
+  <img src="images/my-list.png" alt="My List view — to-buy and purchased items, each with its item count, and a share button" width="260" />
 </p>
 
 ---
@@ -61,11 +63,12 @@ Everything in this section is what you need to use Shoplist on your own phone.
 
 ### Using the app
 
-- **Items** — your stores, categories, and items. Checking an item *selects* it for your list.
-- **My List** — the items you've selected, split into **To buy** and **Purchased**. Checking an item here moves it from *To buy* to *Purchased*.
-- **SMS** — one tap opens your carrier's messaging app with your to-buy items pre-filled (or copy to clipboard).
+- **Items** — your stores, categories, and items. Checking an item *selects* it for your list (a blue box marks items already on your list).
+- **My List** — the items you've selected, split into **To buy** and **Purchased** (each shows its item count). Checking an item here moves it from *To buy* to *Purchased*.
+- **Share** — the share icon in the **To buy** header opens your phone's native share sheet with your to-buy items (or an SMS / copy sheet on phones without it).
 - **Search** — filter items within the current store.
 - **Clear** — in the **Purchased** group, clears only the purchased items, leaving your *To buy* list intact.
+- **Settings** — the gear icon opens the **Settings** sheet: reorder / rename / delete stores, pick an **Appearance** (System / Light / Dark), and **Export** / **Import** backups.
 
 > 💡 **Updated your app?** Newer versions of Shoplist ship with more stores and items (Grocery, Hardware, Office, Pet). If you already have the app installed, the new data only appears for *new* stores you create — to pick up the full updated catalog, **Import** the `starter.json` file from this repo (see [Backups](#-backups)). Your existing items are preserved; the import adds the new stores and categories.
 
@@ -73,12 +76,12 @@ Everything in this section is what you need to use Shoplist on your own phone.
   <tr>
     <th align="center">Items</th>
     <th align="center">My List</th>
-    <th align="center">Manage stores</th>
+    <th align="center">Settings</th>
   </tr>
   <tr>
     <td align="center"><img src="images/items.png" alt="Items view — stores, expandable categories, and checkboxes" width="200" /></td>
-    <td align="center"><img src="images/my-list.png" alt="My List view — to-buy and purchased items" width="200" /></td>
-    <td align="center"><img src="images/manage-stores.png" alt="Manage stores sheet — rename, delete, and backup rows" width="200" /></td>
+    <td align="center"><img src="images/my-list.png" alt="My List view — to-buy and purchased items, each with its item count" width="200" /></td>
+    <td align="center"><img src="images/settings.png" alt="Settings sheet — reorder/rename/delete stores, appearance, and backup" width="200" /></td>
   </tr>
 </table>
 
@@ -86,13 +89,13 @@ Everything in this section is what you need to use Shoplist on your own phone.
 
 Because everything lives in one browser, your list is at the mercy of that browser — **clearing browsing data or switching devices wipes it.** There's no sync, so a backup is your safety net.
 
-From **Stores → ⋮ → Manage stores**, use the **Backup** row:
+From the **gear icon → Settings**, use the **Backup** section:
 
 - **Export** — downloads your entire list (every store, category, and item) as `shoplist-backup.json`.
 - **Import** — picks a backup file and restores it.
 
 <p align="center">
-  <img src="images/manage-stores.png" alt="Manage stores bottom sheet with rename, delete, and backup export/import rows" width="280" />
+  <img src="images/settings.png" alt="Settings bottom sheet — stores, appearance, and backup export/import" width="280" />
 </p>
 
 > ⚠️ **Import replaces everything.** Restoring a backup overwrites your *current* list in full — stores you added since the backup was made are gone. Shoplist has no merge. Make a fresh export before importing an older backup if you want to keep both.
@@ -157,6 +160,10 @@ Shoplist is intentionally a **zero-dependency, single-file** app. The entire UI 
 
 The service worker uses a network-first strategy for the page (so you always get the latest version when online) and falls back to the cache when offline, plus cache-first for static assets.
 
+**Appearance.** The app follows your system color scheme by default, or you can force Light or Dark from the **Settings** sheet. A small script in `<head>` resolves the choice (stored in `localStorage`) *before first paint* and sets `data-theme` on `<html>`, so there's no light flash on dark-mode devices. All colors are CSS custom properties; the dark theme overrides only the color variables with the iOS system dark palette.
+
+**Sharing.** The share button in the **To buy** header builds a plain-text list and prefers the native `navigator.share()` sheet (attaching a cart card image when the phone supports file sharing), falling back to an SMS / copy sheet otherwise.
+
 Every row (store, category, item) has a **⋮** menu that opens a bottom sheet — e.g. the *Category options* sheet for a category lets you move it up/down, rename, or delete it.
 
 <p align="center">
@@ -171,14 +178,16 @@ Shoplist/
 ├── manifest.json     # PWA manifest
 ├── starter.json      # seed data (import to update your list)
 ├── sw.js             # service worker (offline cache)
+├── NATIVE.md         # data contract for the native iOS app
 ├── icons/
 │   ├── icon.svg      # app icon (browsers)
 │   ├── icon-180.png  # home-screen icon (iOS apple-touch-icon)
-│   └── icon-512.png  # manifest / maskable icon
+│   ├── icon-512.png  # manifest / maskable icon
+│   └── share-card.png # cart card image attached to the native share sheet
 ├── images/           # README screenshots
 │   ├── my-list.png
 │   ├── items.png
-│   ├── manage-stores.png
+│   ├── settings.png
 │   └── category-options.png
 ├── LICENSE           # GPL-3.0-or-later
 └── README.md
