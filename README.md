@@ -40,6 +40,7 @@ The **My List** view — your selected items, split into **To buy** and **Purcha
 
 <p align="center">
   <img src="images/my-list.png" alt="My List view — to-buy and purchased items, each with its item count, and a share button" width="260" />
+  <img src="images/my-list-dark.png" alt="My List view in dark mode" width="260" />
 </p>
 
 ---
@@ -77,11 +78,13 @@ Everything in this section is what you need to use Shoplist on your own phone.
     <th align="center">Items</th>
     <th align="center">My List</th>
     <th align="center">Settings</th>
+    <th align="center">Dark mode</th>
   </tr>
   <tr>
-    <td align="center"><img src="images/items.png" alt="Items view — stores, expandable categories, and checkboxes" width="200" /></td>
+    <td align="center"><img src="images/items.png" alt="Items view — stores, expandable categories, blue checkboxes, and the item options sheet" width="200" /></td>
     <td align="center"><img src="images/my-list.png" alt="My List view — to-buy and purchased items, each with its item count" width="200" /></td>
     <td align="center"><img src="images/settings.png" alt="Settings sheet — reorder/rename/delete stores, appearance, and backup" width="200" /></td>
+    <td align="center"><img src="images/appearance.png" alt="Settings sheet in dark mode, with the appearance control" width="200" /></td>
   </tr>
 </table>
 
@@ -162,6 +165,10 @@ The service worker uses a network-first strategy for the page (so you always get
 
 **Appearance.** The app follows your system color scheme by default, or you can force Light or Dark from the **Settings** sheet. A small script in `<head>` resolves the choice (stored in `localStorage`) *before first paint* and sets `data-theme` on `<html>`, so there's no light flash on dark-mode devices. All colors are CSS custom properties; the dark theme overrides only the color variables with the iOS system dark palette.
 
+<p align="center">
+  <img src="images/appearance.png" alt="Settings sheet in dark mode, with the System / Light / Dark appearance control" width="260" />
+</p>
+
 **Sharing.** The share button in the **To buy** header builds a plain-text list and prefers the native `navigator.share()` sheet (attaching a cart card image when the phone supports file sharing), falling back to an SMS / copy sheet otherwise.
 
 Every row (store, category, item) has a **⋮** menu that opens a bottom sheet — e.g. the *Category options* sheet for a category lets you move it up/down, rename, or delete it.
@@ -186,8 +193,10 @@ Shoplist/
 │   └── share-card.png # cart card image attached to the native share sheet
 ├── images/           # README screenshots
 │   ├── my-list.png
+│   ├── my-list-dark.png
 │   ├── items.png
 │   ├── settings.png
+│   ├── appearance.png
 │   └── category-options.png
 ├── LICENSE           # GPL-3.0-or-later
 └── README.md
